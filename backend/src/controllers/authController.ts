@@ -3,11 +3,11 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Pool } from 'pg';
 
-const dbHost = process.env.DB_HOST || 'localhost';
-const dbName = process.env.DB_NAME || 'mydb';
-const dbUser = process.env.DB_USER || 'user';
-const dbPassword = process.env.DB_PASSWORD || 'password';
-const dbPort = process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432;
+const dbHost = process.env.POSTGRES_HOST || 'localhost';
+const dbName = process.env.POSTGRES_DB || 'mydb';
+const dbUser = process.env.POSTGRES_USER || 'user';
+const dbPassword = process.env.POSTGRES_PASSWORD || 'password';
+const dbPort = process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 5432;
 
 // Пример использования переменных окружения для подключения к базе данных
 const dbConfig = {
