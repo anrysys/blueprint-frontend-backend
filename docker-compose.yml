@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    #image: anrysys/anry-full-stack-next-frontend:latest
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    #image: anrysys/anry-full-stack-next-backend:latest
+    ports:
+      - '4000:4000'
+    depends_on:
+      - db
+    environment:
+      POSTGRES_PASSWORD: password
+    command: >
+      sh -c "
+        ./migrations/apply_migrations.sh &&
+        npm start
+      "
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
