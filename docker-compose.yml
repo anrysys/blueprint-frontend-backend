@@ -1,45 +1,48 @@
-version: '3.8'
+#version: '3.8'
 
 services:
-  frontend:
-    build: ./frontend
-    #image: anrysys/anry-full-stack-next-frontend:latest
-    ports:
-      - '3000:3000'
-    depends_on:
-      - backend
-    environment:
-      BACKEND_HOST: backend
-      
-  backend:
-    build: ./backend
-    #image: anrysys/anry-full-stack-next-backend:latest
-    ports:
-      - '4000:4000'
-    depends_on:
-      - db
-    environment:
-      DB_HOST: ${POSTGRES_HOST}
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_PORT: ${POSTGRES_PORT}
-    command: >
-      sh -c "
-        ./migrations/apply_migrations.sh &&
-        npm start
-      "
 
   db:
+    container_name: db
     image: postgres:13
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  # backend:
+  #   container_name: backend
+  #   build: ./backend
+  #   #image: anrysys/anry-full-stack-next-backend:latest
+  #   ports:
+  #     - '4000:4000'
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     DB_HOST: ${POSTGRES_HOST}
+  #     DB_NAME: ${POSTGRES_DB}
+  #     DB_USER: ${POSTGRES_USER}
+  #     DB_PASSWORD: ${POSTGRES_PASSWORD}
+  #     DB_PORT: ${POSTGRES_PORT}
+  #   command: >
+  #     sh -c "
+  #       ./migrations/apply_migrations.sh &&
+  #       npm start
+  #     "
+  # frontend:
+  #   container_name: frontend
+  #   build: ./frontend
+  #   #image: anrysys/anry-full-stack-next-frontend:latest
+  #   ports:
+  #     - '3000:3000'
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     BACKEND_HOST: backend
 
 volumes:
   pgdata:
