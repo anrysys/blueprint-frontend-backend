@@ -1,4 +1,6 @@
+// app/login/page.tsx
 "use client";
+import Cookies from 'js-cookie';
 import { useState } from 'react';
 
 export default function Login() {
@@ -7,15 +9,24 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:4000/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
-    console.log(data);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      Cookies.set('access_token', data.access_token);
+      Cookies.set('refresh_token', data.refresh_token);
+      console.log(data);
+    } catch (error) {
+      console.error('Failed to fetch:', error);
+    }
   };
 
   return (

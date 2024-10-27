@@ -1,7 +1,7 @@
-// src/config/typeorm.config.ts
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { RefreshToken } from '../auth/refresh-token.entity';
 import { Post } from '../posts/post.entity';
 import { User } from '../users/user.entity';
 
@@ -14,6 +14,6 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, Post],
+  entities: [User, Post, RefreshToken],
   synchronize: true,
 };

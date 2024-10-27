@@ -2,15 +2,21 @@
 
 services:
 
+# DB_HOST=localhost
+# DB_NAME=postgres
+# DB_USERNAME=postgres
+# DB_PASSWORD=postgres
+# DB_PORT=5432
+
   db:
     container_name: db
     image: postgres:13
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - '5432:5432'
+      - '${DB_PORT}:${DB_PORT}'
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -23,11 +29,11 @@ services:
   #   depends_on:
   #     - db
   #   environment:
-  #     DB_HOST: ${POSTGRES_HOST}
-  #     DB_NAME: ${POSTGRES_DB}
-  #     DB_USER: ${POSTGRES_USER}
-  #     DB_PASSWORD: ${POSTGRES_PASSWORD}
-  #     DB_PORT: ${POSTGRES_PORT}
+  #     DB_HOST: ${DB_HOST}
+  #     DB_NAME: ${DB_NAME}
+  #     DB_USER: ${DB_USERNAME}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     DB_PORT: ${DB_PORT}
   #   command: >
   #     sh -c "
   #       ./migrations/apply_migrations.sh &&
