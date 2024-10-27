@@ -1,4 +1,3 @@
-
 "use client";
 import { useState } from 'react';
 
@@ -8,7 +7,7 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:4000/api/register', {
+    const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
