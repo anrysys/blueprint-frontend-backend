@@ -1,5 +1,4 @@
-// src/users/user.entity.ts
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from '../posts/post.entity';
 
 @Entity()
@@ -7,9 +6,10 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   username: string;
 
+  @Index({ unique: true })
   @Column()
   email: string;
 
