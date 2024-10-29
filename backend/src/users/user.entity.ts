@@ -1,5 +1,6 @@
+// src/users/user.entity.ts
+
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { RefreshToken } from '../auth/refresh-token.entity';
 import { Post } from '../posts/post.entity';
 
 @Entity()
@@ -20,6 +21,7 @@ export class User {
   @OneToMany(() => Post, post => post.user)
   posts: Post[];
 
-  @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
-  refreshTokens: RefreshToken[];
+  // Удалите это поле, так как мы больше не используем таблицу refresh_token
+  // @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
+  // refreshTokens: RefreshToken[];
 }
