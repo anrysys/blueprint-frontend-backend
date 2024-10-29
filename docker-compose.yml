@@ -19,12 +19,17 @@ services:
       - '${DB_PORT}:${DB_PORT}'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
 
   redis:
     container_name: redis
     image: redis:6
     ports:
-      - '6379:6379'      
+      - '6379:6379'
+    #command: redis-server --requirepass ${REDIS_PASSWORD}
+    #environment:
+    #  REDIS_PASSWORD: ${REDIS_PASSWORD}
+    restart: unless-stopped
 
   # backend:
   #   container_name: backend
@@ -55,6 +60,7 @@ services:
   #     - backend
   #   environment:
   #     BACKEND_HOST: backend
+
 
 volumes:
   pgdata:
