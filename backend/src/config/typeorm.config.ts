@@ -1,11 +1,12 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
-import * as path from 'path';
+// import { DataSource } from 'typeorm';
 import { RefreshToken } from '../auth/refresh-token.entity';
 import { Post } from '../posts/post.entity';
 import { User } from '../users/user.entity';
 
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+//dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config();
 
 export const typeOrmConfig: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -15,5 +16,12 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   entities: [User, Post, RefreshToken],
-  synchronize: true,
+  synchronize: true, // Измените на false для использования миграций
 };
+
+// export const AppDataSource = new DataSource({
+//   type: 'postgres',
+//   ...typeOrmConfig,
+//   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+// });
+
