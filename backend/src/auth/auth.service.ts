@@ -7,6 +7,7 @@ import { RedisService } from '../redis/redis.service';
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -21,8 +22,33 @@ export class AuthService {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       const user = new User();
       user.username = createUserDto.username;
+      user.email = createUserDto.email; // Убедитесь, что email сохраняется
       user.password = hashedPassword;
       return this.usersService.create(user);
+    } catch (error) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string; refreshToken: string }> {
+    try {
+      // Найти пользователя по email
+      const user = await this.usersService.findOneByEmail(loginUserDto.email);
+      if (!user) {
+        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Проверить пароль
+      const isPasswordValid = await bcrypt.compare(loginUserDto.password, user.password);
+      if (!isPasswordValid) {
+        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Генерация токенов
+      return this.generateTokens(user);
     } catch (error) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,

@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { User } from '../users/user.entity';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -23,9 +24,9 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() user: User, @Res() res: Response) {
+  async login(@Body() loginUserDto: LoginUserDto, @Res() res: Response) {
     try {
-      const tokens = await this.authService.generateTokens(user);
+      const tokens = await this.authService.login(loginUserDto);
       res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true });
       return res.json({ accessToken: tokens.accessToken });
     } catch (error) {
