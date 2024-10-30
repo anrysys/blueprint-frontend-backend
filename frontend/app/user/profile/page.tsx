@@ -3,7 +3,7 @@
 "use client";
 
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation'; // Изменено с 'next/router'
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -105,7 +105,7 @@ export default function Profile() {
             type="text"
             id="username"
             name="username"
-            value={userData.username}
+            value={userData.username || ''}
             onChange={handleInputChange}
           />
         </div>
@@ -115,7 +115,7 @@ export default function Profile() {
             type="email"
             id="email"
             name="email"
-            value={userData.email}
+            value={userData.email || ''}
             onChange={handleInputChange}
           />
         </div>
