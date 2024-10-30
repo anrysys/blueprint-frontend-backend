@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useAuthStore } from '../../store/authStore';
 
 export default function Login() {
@@ -38,14 +39,13 @@ export default function Login() {
         },
         body: JSON.stringify({ email, password }),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `Error: ${response.statusText}`);
       }
+
       const data = await response.json();
-
-      console.log('data', data);
-
       Cookies.set('access_token', data.accessToken);
       Cookies.set('refresh_token', data.refreshToken);
       setIsAuthenticated(true);
@@ -62,6 +62,7 @@ export default function Login() {
 
   return (
     <div>
+      <h1>Login Page</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="email"
@@ -79,4 +80,4 @@ export default function Login() {
       </form>
     </div>
   );
-}
+} 
