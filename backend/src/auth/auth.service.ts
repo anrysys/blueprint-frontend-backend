@@ -12,7 +12,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-  
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
@@ -24,10 +24,13 @@ export class AuthService {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       const user = new User();
       user.username = createUserDto.username;
-      user.email = createUserDto.email; // Убедитесь, что email сохраняется
+      user.email = createUserDto.email;
       user.password = hashedPassword;
-      return this.usersService.create(user);
+      const createdUser = await this.usersService.create(user);
+      this.logger.log(`User created: ${JSON.stringify(createdUser)}`); // Логирование созданного пользователя
+      return createdUser;
     } catch (error) {
+      this.logger.error(`Registration error: ${error.message}`); // Логирование ошибки
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -37,21 +40,15 @@ export class AuthService {
 
   async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string; refreshToken: string }> {
     try {
-      // Найти пользователя по email
-      const user = await this.usersService.findOneByEmail(loginUserDto.email);
+      const user = await this.validateUser(loginUserDto.email, loginUserDto.password);
       if (!user) {
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
-
-      // Проверить пароль
-      const isPasswordValid = await bcrypt.compare(loginUserDto.password, user.password);
-      if (!isPasswordValid) {
-        throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-      }
-
-      // Генерация токенов
-      return this.generateTokens(user);
+      const tokens = await this.generateTokens(user);
+      this.logger.log(`Tokens generated for user ${user.id}: ${JSON.stringify(tokens)}`); // Логирование токенов
+      return tokens;
     } catch (error) {
+      this.logger.error(`Login error: ${error.message}`); // Логирование ошибки
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -67,6 +64,7 @@ export class AuthService {
       }
       return null;
     } catch (error) {
+      this.logger.error(`Validation error: ${error.message}`); // Логирование ошибки
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -76,15 +74,17 @@ export class AuthService {
 
   async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
     try {
-      // ! Create Payload for JWT
       const payload = { username: user.username, sub: user.id, email: user.email };
       const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
       const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 
-      await this.redisService.set(`refresh_token:${user.id}`, refreshToken, 7 * 24 * 60 * 60); // 7 дней
+      // Сохранение refresh_token в Redis с ограничением времени жизни
+      const refreshTokenExpiry = 7 * 24 * 60 * 60; // 7 дней в секундах
+      await this.redisService.set(`refresh_token:${user.id}`, refreshToken, refreshTokenExpiry);
 
       return { accessToken, refreshToken };
     } catch (error) {
+      this.logger.error(`Token generation error: ${error.message}`); // Логирование ошибки
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
