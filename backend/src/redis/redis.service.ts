@@ -1,12 +1,13 @@
 // src/redis/redis.service.ts
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as Redis from 'ioredis';
 
 @Injectable()
 export class RedisService {
   private readonly client: Redis.Redis;
-
+  private readonly logger = new Logger(RedisService.name);
+  
   constructor() {
     this.client = new Redis.default({
       host: process.env.REDIS_HOST,
@@ -23,7 +24,9 @@ export class RedisService {
   }
 
   async get(key: string): Promise<string | null> {
-    return this.client.get(key);
+    const value = await this.client.get(key);
+    this.logger.log(`GET ${key}: ${value}`); // Логирование значения ключа
+    return value;
   }
 
   async del(key: string): Promise<void> {

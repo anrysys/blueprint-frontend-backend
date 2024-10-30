@@ -1,5 +1,5 @@
 // src/auth/auth.controller.ts
-import { Body, Controller, HttpException, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, HttpException, HttpStatus, Logger, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { User } from '../users/user.entity';
 import { AuthService } from './auth.service';
@@ -8,6 +8,8 @@ import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+  
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
@@ -27,9 +29,12 @@ export class AuthController {
   async login(@Body() loginUserDto: LoginUserDto, @Res() res: Response) {
     try {
       const tokens = await this.authService.login(loginUserDto);
+      this.logger.log(`Tokens generated on backend (auth/login): ${JSON.stringify(tokens)}`); // Логирование токенов
       res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true });
-      return res.json({ accessToken: tokens.accessToken });
+      res.cookie('access_token', tokens.accessToken, { httpOnly: true });
+      return res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
     } catch (error) {
+      this.logger.error(`Login error: ${error.message}`); // Логирование ошибки
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -46,7 +51,8 @@ export class AuthController {
       if (await this.authService.validateRefreshToken(userId, refreshToken)) {
         const tokens = await this.authService.generateTokens({ id: userId } as User);
         res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true });
-        return res.json({ accessToken: tokens.accessToken });
+        res.cookie('access_token', tokens.accessToken, { httpOnly: true });
+        return res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
       } else {
         return res.status(401).json({ message: 'Invalid refresh token' });
       }

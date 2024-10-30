@@ -30,6 +30,9 @@ export async function POST(req: Request) {
       throw new Error(data.message);
     }
 
+
+    console.log('Tokens generated:', JSON.stringify(data)); // Логирование токенов
+
     return new Response(JSON.stringify(data), {
       status: res.status,
       headers: { 'Content-Type': 'application/json' },

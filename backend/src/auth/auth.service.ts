@@ -1,6 +1,6 @@
 // src/auth/auth.service.ts
 
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RedisService } from '../redis/redis.service';
@@ -11,6 +11,8 @@ import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+  
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
@@ -74,7 +76,8 @@ export class AuthService {
 
   async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
     try {
-      const payload = { username: user.username, sub: user.id };
+      // ! Create Payload for JWT
+      const payload = { username: user.username, sub: user.id, email: user.email };
       const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
       const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 

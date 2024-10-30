@@ -9,14 +9,29 @@ export async function GET(req: Request) {
     }
 
     // Получить заголовки с запроса от клиента
+    const headers = req.headers;
+    // Получить токен из заголовков
+    const token = headers.get('Authorization');
+    // Если токен не найден, выбросить ошибку
+    if (!token) {
+        throw new Error('Token is missing');
+    }
+
+
+    console.log('GET /user/profile - Headers:', JSON.stringify(headers)); // Логирование заголовков запроса
+    console.log('Token from headers:', token); // Логирование токена
+    
     const response = await fetch(url, {
         method: 'GET',
-        headers: new Headers({
-            Authorization: req.headers.get('Authorization') || '',
-        }),
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: token,
+        },
       });
 
     const data = await response.json();
+    console.log('Tokens generated (user/profile):', JSON.stringify(data)); // Логирование токенов
 
     // Если ответ не успешен, выбросить ошибку
     if (!response.ok) {

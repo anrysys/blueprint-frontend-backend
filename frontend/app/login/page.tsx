@@ -43,8 +43,11 @@ export default function Login() {
         throw new Error(errorData.message || `Error: ${response.statusText}`);
       }
       const data = await response.json();
-      Cookies.set('access_token', data.access_token);
-      Cookies.set('refresh_token', data.refresh_token);
+
+      console.log('data', data);
+
+      Cookies.set('access_token', data.accessToken);
+      Cookies.set('refresh_token', data.refreshToken);
       setIsAuthenticated(true);
       toast.success('Login successful!');
       router.push('/user/profile');
