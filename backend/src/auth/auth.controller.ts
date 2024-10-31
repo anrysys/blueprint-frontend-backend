@@ -17,7 +17,11 @@ export class AuthController {
   async register(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
     try {
       const user = await this.authService.register(createUserDto);
-      return res.json(user);
+      const tokens = await this.authService.generateTokens(user);
+      this.logger.log(`Tokens generated on backend (auth/register): ${JSON.stringify(tokens)}`);
+      res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true });
+      res.cookie('access_token', tokens.accessToken, { httpOnly: true });
+      return res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
     } catch (error) {
       this.logger.error(`Registration error: ${error.message}`);
       throw new HttpException({
