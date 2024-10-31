@@ -1,6 +1,6 @@
 // src/app/user/profile/page.tsx
 
-"use client";
+'use client';
 
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
@@ -15,7 +15,6 @@ export default function Profile() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
   const logout = useAuthStore((state) => state.logout);
-
   const [userData, setUserData] = useState({
     username: '',
     email: '',
@@ -23,12 +22,17 @@ export default function Profile() {
 
   useEffect(() => {
     setIsClient(true);
-    const token = Cookies.get('access_token');
-    if (token) {
-      setIsAuthenticated(true);
-      fetchUserData(token);
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      const token = Cookies.get('access_token');
+      if (token) {
+        setIsAuthenticated(true);
+        fetchUserData(token);
+      }
     }
-  }, [setIsAuthenticated]);
+  }, [isClient, setIsAuthenticated]);
 
   useEffect(() => {
     if (isClient && !isAuthenticated) {
