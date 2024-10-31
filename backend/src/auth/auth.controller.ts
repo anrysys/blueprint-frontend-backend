@@ -1,4 +1,5 @@
 // src/auth/auth.controller.ts
+
 import { Body, Controller, HttpException, HttpStatus, Logger, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { User } from '../users/user.entity';
@@ -9,7 +10,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
-  
+
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
@@ -18,6 +19,7 @@ export class AuthController {
       const user = await this.authService.register(createUserDto);
       return res.json(user);
     } catch (error) {
+      this.logger.error(`Registration error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -29,15 +31,18 @@ export class AuthController {
   async login(@Body() loginUserDto: LoginUserDto, @Res() res: Response) {
     try {
       const tokens = await this.authService.login(loginUserDto);
-      this.logger.log(`Tokens generated on backend (auth/login): ${JSON.stringify(tokens)}`); // Логирование токенов
+      this.logger.log(`Tokens generated on backend (auth/login): ${JSON.stringify(tokens)}`);
       res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true });
       res.cookie('access_token', tokens.accessToken, { httpOnly: true });
       return res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
     } catch (error) {
-      this.logger.error(`Login error: ${error.message}`); // Логирование ошибки
+      this.logger.error(`Login error: ${error.message}`);
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: error.message,
+        error: 'Internal Server Error',
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -57,6 +62,7 @@ export class AuthController {
         return res.status(401).json({ message: 'Invalid refresh token' });
       }
     } catch (error) {
+      this.logger.error(`Refresh error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -70,8 +76,10 @@ export class AuthController {
       const userId = req.body.userId;
       await this.authService.revokeRefreshToken(userId);
       res.clearCookie('refresh_token');
+      res.clearCookie('access_token');
       return res.json({ message: 'Logged out successfully' });
     } catch (error) {
+      this.logger.error(`Logout error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,

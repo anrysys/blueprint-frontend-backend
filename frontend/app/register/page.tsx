@@ -1,4 +1,4 @@
-// app/register/page.tsx
+// src/app/register/page.tsx
 "use client";
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
@@ -59,6 +59,7 @@ export default function Register() {
 
   return (
     <div>
+      <h1>Register Page</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="email"
