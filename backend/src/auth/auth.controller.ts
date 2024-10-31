@@ -52,10 +52,10 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refresh(@Body() body: { refreshToken: string }, @Req() req: Request, @Res() res: Response) {
+  async refresh(@Body() body: { refreshToken: string }, @Res() res: Response) {
     try {
       const { refreshToken } = body;
-      const userId = req.body.userId;
+      const userId = this.authService.getUserIdFromToken(refreshToken);
 
       if (await this.authService.validateRefreshToken(userId, refreshToken)) {
         const tokens = await this.authService.generateTokens({ id: userId } as User);
