@@ -25,14 +25,12 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
-    if (isClient) {
-      const token = Cookies.get('access_token');
-      if (token) {
-        setIsAuthenticated(true);
-        fetchUserData(token);
-      }
+    const token = Cookies.get('access_token');
+    if (isClient && token && !isAuthenticated) {
+      setIsAuthenticated(true);
+      fetchUserData(token);
     }
-  }, [isClient, setIsAuthenticated]);
+  }, [isClient, isAuthenticated, setIsAuthenticated]);
 
   useEffect(() => {
     if (isClient && !isAuthenticated) {
