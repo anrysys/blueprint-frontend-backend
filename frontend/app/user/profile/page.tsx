@@ -4,7 +4,7 @@
 
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuthStore } from '../../../store/authStore';
@@ -24,37 +24,59 @@ export default function Profile() {
     setIsClient(true);
   }, []);
 
+  const fetchUserData = useCallback(async (token: string) => {
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Token expired, try to refresh it
+          const refreshResponse = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ refreshToken: Cookies.get('refresh_token') }),
+          });
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            Cookies.set('access_token', refreshData.accessToken);
+            Cookies.set('refresh_token', refreshData.refreshToken);
+            fetchUserData(refreshData.accessToken);
+            return;
+          } else {
+            throw new Error('Failed to refresh token');
+          }
+        } else {
+          throw new Error('Failed to fetch user data');
+        }
+      }
+      const data = await response.json();
+      setUserData(data);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      toast.error('Failed to fetch user data.');
+    }
+  }, []);
+
   useEffect(() => {
     const token = Cookies.get('access_token');
     if (isClient && token && !isAuthenticated) {
       setIsAuthenticated(true);
       fetchUserData(token);
     }
-  }, [isClient, isAuthenticated, setIsAuthenticated]);
+  }, [isClient, isAuthenticated, setIsAuthenticated, fetchUserData]);
 
   useEffect(() => {
     if (isClient && !isAuthenticated) {
       router.push('/login');
     }
   }, [isClient, isAuthenticated, router]);
-
-  const fetchUserData = async (token: string) => {
-    try {
-      const response = await fetch('/api/user/profile', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch user data');
-      }
-      const data = await response.json();
-      setUserData(data);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
