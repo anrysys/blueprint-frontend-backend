@@ -37,8 +37,12 @@ jspm_packages/
 # TypeScript
 *.tsbuildinfo
 
-# Optional VS Code settings
-.vscode/
+# IDE - VSCode
+.vscode/*
+#!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
 # Build directories
 dist/

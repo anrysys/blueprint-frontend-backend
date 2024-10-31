@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useAuthStore } from '../../store/authStore';
 
 export default function Register() {
@@ -38,13 +39,15 @@ export default function Register() {
         },
         body: JSON.stringify({ email, password }),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `Error: ${response.statusText}`);
       }
+
       const data = await response.json();
-      Cookies.set('access_token', data.access_token);
-      Cookies.set('refresh_token', data.refresh_token);
+      Cookies.set('access_token', data.accessToken);
+      Cookies.set('refresh_token', data.refreshToken);
       setIsAuthenticated(true);
       toast.success('Registration successful!');
       router.push('/user/profile');
