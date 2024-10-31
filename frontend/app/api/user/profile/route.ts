@@ -25,9 +25,6 @@ export async function GET(req: Request) {
   });
   const data = await response.json();
   console.log('Tokens generated (user/profile):', JSON.stringify(data));
-  if (!response.ok) {
-    throw new Error(data.message);
-  }
   return new Response(JSON.stringify(data), {
     status: response.status,
     headers: { 'Content-Type': 'application/json' },
@@ -59,9 +56,6 @@ export async function PUT(req: Request) {
   });
   const data = await response.json();
   console.log('Tokens generated (user/profile):', JSON.stringify(data));
-  if (!response.ok) {
-    throw new Error(data.message);
-  }
   return new Response(JSON.stringify(data), {
     status: response.status,
     headers: { 'Content-Type': 'application/json' },

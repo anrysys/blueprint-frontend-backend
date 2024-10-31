@@ -34,6 +34,9 @@ export default function Profile() {
         },
       });
       if (!response.ok) {
+
+        // console.log('response watch: ', response);
+
         if (response.status === 401) {
           // Token expired, try to refresh it
           const refreshResponse = await fetch('/api/auth/refresh', {
