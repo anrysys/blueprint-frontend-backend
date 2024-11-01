@@ -54,6 +54,10 @@ export default function Profile() {
       if (decodedToken.sub === data.id) { // Проверка, что ID пользователя совпадает
         setUsername(data.username || '');
         setEmail(data.email || '');
+
+        // Сохраняем текущие данные пользователя в localStorage
+        localStorage.setItem('username', data.username || '');
+        localStorage.setItem('email', data.email || '');
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -69,10 +73,6 @@ export default function Profile() {
       if (!refreshToken) {
         throw new Error('No refresh token found');
       }
-
-      // Сохраняем текущие данные пользователя в localStorage
-      localStorage.setItem('username', username);
-      localStorage.setItem('email', email);
 
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
