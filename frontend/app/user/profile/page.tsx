@@ -4,154 +4,129 @@
 
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useAuthStore } from '../../../store/authStore';
 
 export default function Profile() {
-  const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
-  const logout = useAuthStore((state) => state.logout);
-  const [userData, setUserData] = useState({ username: '', email: '' });
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    setIsClient(true);
+    const fetchProfile = async () => {
+      try {
+        const token = Cookies.get('access_token');
+        if (!token) {
+          throw new Error('No access token found');
+        }
+
+        const response = await fetch('/api/user/profile', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          await refreshTokens();
+          return fetchProfile();
+        }
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const data = await response.json();
+        setUsername(data.username);
+        setEmail(data.email);
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
-  const fetchUserData = useCallback(async (token: string) => {
+  const refreshTokens = async () => {
     try {
-      console.log('Fetching user data with token:', token); // Логирование токена
-      const response = await fetch('/api/user/profile', {
-        method: 'GET',
+      const refreshToken = Cookies.get('refresh_token');
+      if (!refreshToken) {
+        throw new Error('No refresh token found');
+      }
+
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ refreshToken }),
       });
-      console.log('Response status:', response.status); // Логирование статуса ответа
+
       if (!response.ok) {
-        if (response.status === 401) {
-          // Token expired, try to refresh it
-          const refreshResponse = await fetch('/api/auth/refresh', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ refreshToken: Cookies.get('refresh_token') }),
-          });
-          console.log('Refresh response status:', refreshResponse.status); // Логирование статуса ответа обновления
-          if (refreshResponse.ok) {
-            const refreshData = await refreshResponse.json();
-            console.log('Refresh data:', refreshData); // Логирование данных обновления
-            Cookies.set('access_token', refreshData.accessToken);
-            Cookies.set('refresh_token', refreshData.refreshToken);
-            fetchUserData(refreshData.accessToken);
-            return;
-          } else {
-            throw new Error('Failed to refresh token');
-          }
-        } else {
-          throw new Error('Failed to fetch user data');
-        }
+        throw new Error('Failed to refresh tokens');
       }
+
       const data = await response.json();
-      console.log('Fetched user data:', data); // Логирование данных пользователя
-      if (data) {
-        console.log('Setting user data:', data); // Логирование данных перед установкой
-        setUserData({
-          username: data.username ?? '', // Установка значения по умолчанию для username
-          email: data.email ?? '',
-        });
-        console.log('Updated userData state:', {
-          username: data.username ?? '',
-          email: data.email ?? '',
-        }); // Логирование состояния userData после установки
-      }
+      Cookies.set('access_token', data.accessToken);
+      Cookies.set('refresh_token', data.refreshToken);
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      toast.error('Failed to fetch user data.');
-    } finally {
-      console.log('Setting isLoading to false'); // Логирование изменения состояния isLoading
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const token = Cookies.get('access_token');
-    if (isClient && token && !isAuthenticated) {
-      setIsAuthenticated(true);
-      fetchUserData(token);
-    }
-  }, [isClient, isAuthenticated, setIsAuthenticated, fetchUserData]);
-
-  useEffect(() => {
-    if (isClient && !isAuthenticated) {
+      toast.error(error.message);
       router.push('/login');
     }
-  }, [isClient, isAuthenticated, router]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUserData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
   };
 
-  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const token = Cookies.get('access_token');
-      console.log('Submitting user data:', userData); // Логирование отправляемых данных
+      if (!token) {
+        throw new Error('No access token found');
+      }
+
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify({ username, email }),
       });
-      console.log('Response status:', response.status); // Логирование статуса ответа
+
+      if (response.status === 401) {
+        await refreshTokens();
+        return handleSubmit(e);
+      }
+
       if (!response.ok) {
         throw new Error('Failed to update profile');
       }
-      toast.success('Profile updated successfully!');
+
+      toast.success('Profile updated successfully');
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile.');
+      toast.error(error.message);
     }
   };
 
-  if (!isClient || !isAuthenticated || isLoading) {
-    console.log('Loading...'); // Логирование состояния загрузки
-    return <div>Loading...</div>; // Показать загрузочный экран
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
-
-  console.log('Rendering Profile component with userData:', userData); // Логирование состояния userData при рендере
-
-  const handleLogout = () => {
-    logout();
-    toast.success('You have successfully logged out!');
-    router.push('/login');
-  };
 
   return (
     <div>
       <h1>Profile Page</h1>
-      <p>Welcome to your profile!</p>
-      <form onSubmit={handleFormSubmit}>
+      <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username:</label>
           <input
             type="text"
             id="username"
-            name="username"
-            value={userData.username || ''}
-            onChange={handleInputChange}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </div>
         <div>
@@ -159,14 +134,12 @@ export default function Profile() {
           <input
             type="email"
             id="email"
-            name="email"
-            value={userData.email || ''}
-            onChange={handleInputChange}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <button type="submit">Update Profile</button>
       </form>
-      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 }
