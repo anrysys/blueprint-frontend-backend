@@ -9,6 +9,7 @@ import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { UserResponse } from '../users/dto/user-response.dto';
 
 dotenv.config(); // Загрузка переменных из .env
 
@@ -36,7 +37,7 @@ export class AuthService {
     if (!user) {
       throw new Error('Invalid credentials');
     }
-    return this.generateTokens(user);
+    return this.generateTokens(this.usersService.toUserResponse(user));
   }
 
   async validateUser(email: string, password: string): Promise<User | null> {
@@ -47,21 +48,20 @@ export class AuthService {
     return null;
   }
 
-  async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
+  async generateTokens(user: UserResponse): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = { username: user.username, sub: user.id, email: user.email };
     const accessToken = this.jwtService.sign(payload, { expiresIn: process.env.ACCESS_TOKEN_EXPIRED_IN || '15m' });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: process.env.REFRESH_TOKEN_EXPIRED_IN || '7d' });
-    // await this.updateRefreshTokenInRedis(user.id, refreshToken); // Обновление токена в Redis
     return { accessToken, refreshToken };
   }
 
-  async validateRefreshToken(userId: number, refreshToken: string): Promise<{ isValid: boolean, user?: User }> {
+  async validateRefreshToken(userId: number, refreshToken: string): Promise<{ isValid: boolean, user?: UserResponse }> {
     const user = await this.usersService.findOneById(userId);
     if (!user) {
       return { isValid: false };
     }
     const payload = this.jwtService.verify(refreshToken);
-    return { isValid: payload.sub === user.id, user: payload.sub === user.id ? user : undefined };
+    return { isValid: payload.sub === user.id, user: payload.sub === user.id ? this.usersService.toUserResponse(user) : undefined };
   }
 
   getUserIdFromToken(token: string): number {
@@ -69,8 +69,12 @@ export class AuthService {
     return payload.sub;
   }
 
-  async getUserById(userId: number): Promise<User> {
-    return this.usersService.findOneById(userId);
+  async getUserById(userId: number): Promise<UserResponse> {
+    const user = await this.usersService.findOneById(userId);
+    if (user) {
+      return this.usersService.toUserResponse(user);
+    }
+    return undefined;
   }
 
   async updateRefreshTokenInRedis(userId: number, refreshToken: string): Promise<void> {
