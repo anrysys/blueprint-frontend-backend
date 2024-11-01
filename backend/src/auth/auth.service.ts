@@ -49,7 +49,7 @@ export class AuthService {
         throw new Error('Invalid credentials');
       }
       this.logger.log(`User validated: ${JSON.stringify(user)}`);
-      const tokens = await this.generateTokens(plainToInstance(User, user));
+      const tokens = await this.generateTokens(user);
       this.logger.log(`Tokens generated: ${JSON.stringify(tokens)}`);
       return tokens;
     } catch (error) {
