@@ -64,10 +64,17 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<User | null> {
     try {
       const user = await this.usersService.findOneByEmail(email);
-      if (user && await bcrypt.compare(password, user.password)) {
-        return user;
+      if (!user) {
+        this.logger.error(`User not found with email: ${email}`);
+        return null;
       }
-      return null;
+      this.logger.log(`Comparing passwords for user: ${JSON.stringify(user)}`);
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        this.logger.error(`Invalid password for user: ${email}`);
+        return null;
+      }
+      return user;
     } catch (error) {
       this.logger.error(`Validation error: ${error.message}`);
       throw new HttpException({
