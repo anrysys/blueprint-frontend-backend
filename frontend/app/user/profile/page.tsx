@@ -70,6 +70,10 @@ export default function Profile() {
         throw new Error('No refresh token found');
       }
 
+      // Сохраняем текущие данные пользователя
+      const currentUsername = username;
+      const currentEmail = email;
+
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: {
@@ -85,6 +89,11 @@ export default function Profile() {
       const data = await response.json();
       Cookies.set('access_token', data.accessToken);
       Cookies.set('refresh_token', data.refreshToken);
+
+      // Восстанавливаем данные пользователя после обновления токенов
+      setUsername(currentUsername);
+      setEmail(currentEmail);
+
       await fetchProfile(); // Fetch profile again after refreshing tokens
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
