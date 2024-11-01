@@ -40,10 +40,14 @@ export default function Profile() {
         }
 
         const data = await response.json();
-        setUsername(data.username);
-        setEmail(data.email);
+        setUsername(data.username || '');
+        setEmail(data.email || '');
       } catch (error) {
-        toast.error(error.message);
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error('An unknown error occurred');
+        }
       } finally {
         setIsLoading(false);
       }
