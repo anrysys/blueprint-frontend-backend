@@ -22,7 +22,7 @@ export default function Profile() {
           throw new Error('No access token found');
         }
 
-        const response = await fetch('/api/user/profile', {
+        let response = await fetch('/api/user/profile', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -32,7 +32,13 @@ export default function Profile() {
 
         if (response.status === 401) {
           await refreshTokens();
-          return fetchProfile();
+          response = await fetch('/api/user/profile', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${Cookies.get('access_token')}`,
+            },
+          });
         }
 
         if (!response.ok) {
@@ -43,11 +49,7 @@ export default function Profile() {
         setUsername(data.username || '');
         setEmail(data.email || '');
       } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else {
-          toast.error('An unknown error occurred');
-        }
+        toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -79,7 +81,7 @@ export default function Profile() {
       Cookies.set('access_token', data.accessToken);
       Cookies.set('refresh_token', data.refreshToken);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
       router.push('/login');
     }
   };
@@ -112,7 +114,7 @@ export default function Profile() {
 
       toast.success('Profile updated successfully');
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
     }
   };
 
@@ -123,7 +125,7 @@ export default function Profile() {
       toast.success('You have successfully logged out!');
       router.push('/login');
     } catch (error) {
-      toast.error('Failed to logout.');
+      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
     }
   };
 
