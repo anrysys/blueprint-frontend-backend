@@ -63,9 +63,10 @@ export default function Profile() {
       const data = await response.json();
       console.log('Fetched user data:', data); // Логирование данных пользователя
       if (data) {
+        console.log('Setting user data:', data); // Логирование данных перед установкой
         setUserData({
-          username: data.username || '', // Установка значения по умолчанию для username
-          email: data.email || '',
+          username: data.username ?? '', // Установка значения по умолчанию для username
+          email: data.email ?? '',
         });
       }
     } catch (error) {
