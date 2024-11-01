@@ -1,5 +1,6 @@
 // src/users/user.entity.ts
 
+import { Exclude } from 'class-transformer';
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from '../posts/post.entity';
 
@@ -15,6 +16,7 @@ export class User {
   @Column()
   email: string;
 
+  @Exclude()
   @Column()
   password: string;
 

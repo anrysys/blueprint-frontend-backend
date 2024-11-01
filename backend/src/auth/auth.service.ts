@@ -4,12 +4,12 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
+import { plainToClass } from 'class-transformer';
 import { RedisService } from '../redis/redis.service'; // Импорт RedisService
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
-import { UserResponse } from '../users/dto/user-response.dto';
 
 dotenv.config(); // Загрузка переменных из .env
 
@@ -23,7 +23,7 @@ export class AuthService {
     private readonly redisService: RedisService, 
   ) {}
 
-  async register(createUserDto: CreateUserDto): Promise<UserResponse> {
+  async register(createUserDto: CreateUserDto): Promise<User> {
     try {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       const user = new User();
@@ -31,7 +31,7 @@ export class AuthService {
       user.email = createUserDto.email;
       user.password = hashedPassword;
       const createdUser = await this.usersService.create(user);
-      return this.usersService.toUserResponse(createdUser);
+      return plainToClass(User, createdUser);
     } catch (error) {
       this.logger.error(`Registration error: ${error.message}`);
       throw new HttpException({
@@ -47,7 +47,7 @@ export class AuthService {
       if (!user) {
         throw new Error('Invalid credentials');
       }
-      return this.generateTokens(this.usersService.toUserResponse(user));
+      return this.generateTokens(plainToClass(User, user));
     } catch (error) {
       this.logger.error(`Login error: ${error.message}`);
       throw new HttpException({
@@ -73,7 +73,7 @@ export class AuthService {
     }
   }
 
-  async generateTokens(user: UserResponse): Promise<{ accessToken: string; refreshToken: string }> {
+  async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       const payload = { username: user.username, sub: user.id, email: user.email };
       const accessToken = this.jwtService.sign(payload, { expiresIn: process.env.ACCESS_TOKEN_EXPIRED_IN || '15m' });
@@ -88,14 +88,14 @@ export class AuthService {
     }
   }
 
-  async validateRefreshToken(userId: number, refreshToken: string): Promise<{ isValid: boolean, user?: UserResponse }> {
+  async validateRefreshToken(userId: number, refreshToken: string): Promise<{ isValid: boolean, user?: User }> {
     try {
       const user = await this.usersService.findOneById(userId);
       if (!user) {
         return { isValid: false };
       }
       const payload = this.jwtService.verify(refreshToken);
-      return { isValid: payload.sub === user.id, user: payload.sub === user.id ? this.usersService.toUserResponse(user) : undefined };
+      return { isValid: payload.sub === user.id, user: payload.sub === user.id ? plainToClass(User, user) : undefined };
     } catch (error) {
       this.logger.error(`Refresh token validation error: ${error.message}`);
       throw new HttpException({
@@ -118,11 +118,11 @@ export class AuthService {
     }
   }
 
-  async getUserById(userId: number): Promise<UserResponse> {
+  async getUserById(userId: number): Promise<User> {
     try {
       const user = await this.usersService.findOneById(userId);
       if (user) {
-        return this.usersService.toUserResponse(user);
+        return plainToClass(User, user);
       }
       return undefined;
     } catch (error) {

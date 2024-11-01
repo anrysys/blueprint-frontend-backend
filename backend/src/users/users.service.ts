@@ -3,6 +3,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { plainToClass } from 'class-transformer';
 import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { User } from './user.entity';
 import { UserResponse } from './dto/user-response.dto';
@@ -20,11 +21,13 @@ export class UsersService {
   }
 
   async findOneByEmail(email: string): Promise<User | undefined> {
-    return this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({ where: { email } });
+    return user ? plainToClass(User, user) : undefined;
   }
 
   async findOneById(id: number): Promise<User | undefined> {
-    return this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({ where: { id } });
+    return user ? plainToClass(User, user) : undefined;
   }
 
   toUserResponse(user: User): UserResponse {
