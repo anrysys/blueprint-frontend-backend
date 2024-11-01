@@ -6,7 +6,14 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
+import jwtDecode from 'jwt-decode';
 import 'react-toastify/dist/ReactToastify.css';
+
+interface DecodedToken {
+  sub: number;
+  username: string;
+  email: string;
+}
 
 export default function Profile() {
   const [username, setUsername] = useState('');
@@ -43,8 +50,11 @@ export default function Profile() {
       }
 
       const data = await response.json();
-      setUsername(data.username || '');
-      setEmail(data.email || '');
+      const decodedToken: DecodedToken = jwtDecode(token);
+      if (decodedToken.sub === data.id) { // Проверка, что ID пользователя совпадает
+        setUsername(data.username || '');
+        setEmail(data.email || '');
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {

@@ -12,6 +12,7 @@
     "@types/styled-components": "^5.1.34",
     "css-loader": "^7.1.2",
     "js-cookie": "^3.0.5",
+    "jwt-decode": "^4.0.0",
     "next": "14.2.15",
     "react": "^18",
     "react-dom": "^18",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
+    "@types/jwt-decode": "^3.1.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
