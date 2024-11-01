@@ -4,7 +4,7 @@
 
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -13,8 +13,12 @@ export default function Profile() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const isFetching = useRef(false);
 
   const fetchProfile = async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+
     try {
       const token = Cookies.get('access_token');
       if (!token) {
@@ -45,6 +49,7 @@ export default function Profile() {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
       setIsLoading(false);
+      isFetching.current = false;
     }
   };
 
