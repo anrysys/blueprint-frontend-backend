@@ -2,6 +2,11 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthGuard } from '../auth/auth.guard';
 import { UsersService } from './users.service';
+import { User } from './user.entity'; // Импортируем сущность User
+
+interface AuthenticatedRequest extends Request {
+  user: User; // Добавляем типизацию для req.user
+}
 
 @Controller('user')
 export class UserController {
@@ -9,7 +14,7 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  async getProfile(@Req() req: Request, @Res() res: Response) {
+  async getProfile(@Req() req: AuthenticatedRequest, @Res() res: Response) {
     try {
       const userId = req.user.id;
       const user = await this.usersService.findOneById(userId);
