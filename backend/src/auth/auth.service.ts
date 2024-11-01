@@ -1,9 +1,6 @@
-// src/auth/auth.service.ts
-
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { plainToInstance } from 'class-transformer';
 import * as dotenv from 'dotenv';
 import { RedisService } from '../redis/redis.service'; // Импорт RedisService
 import { User } from '../users/user.entity';
@@ -32,7 +29,7 @@ export class AuthService {
       user.password = hashedPassword;
       const createdUser = await this.usersService.create(user);
       this.logger.log(`User registered: ${JSON.stringify(createdUser)}`);
-      return plainToInstance(User, createdUser);
+      return createdUser;
     } catch (error) {
       this.logger.error(`Registration error: ${error.message}`);
       throw new HttpException({
@@ -49,7 +46,7 @@ export class AuthService {
         throw new Error('Invalid credentials');
       }
       this.logger.log(`User validated: ${JSON.stringify(user)}`);
-      const tokens = await this.generateTokens(plainToInstance(User, user));
+      const tokens = await this.generateTokens(user);
       this.logger.log(`Tokens generated: ${JSON.stringify(tokens)}`);
       return tokens;
     } catch (error) {
@@ -64,10 +61,20 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<User | null> {
     try {
       const user = await this.usersService.findOneByEmail(email);
-      if (user && await bcrypt.compare(password, user.password)) {
-        return user;
+      if (!user) {
+        this.logger.error(`User not found with email: ${email}`);
+        return null;
       }
-      return null;
+      this.logger.log(`Comparing passwords for user: ${JSON.stringify(user)}`);
+      this.logger.log(`Password provided: ${password}`);
+      this.logger.log(`Password stored: ${user.password}`);
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      this.logger.log(`Password comparison result: ${isPasswordValid}`);
+      if (!isPasswordValid) {
+        this.logger.error(`Invalid password for user: ${email}`);
+        return null;
+      }
+      return user;
     } catch (error) {
       this.logger.error(`Validation error: ${error.message}`);
       throw new HttpException({
@@ -99,7 +106,7 @@ export class AuthService {
         return { isValid: false };
       }
       const payload = this.jwtService.verify(refreshToken);
-      return { isValid: payload.sub === user.id, user: payload.sub === user.id ? plainToInstance(User, user) : undefined };
+      return { isValid: payload.sub === user.id, user: payload.sub === user.id ? user : undefined };
     } catch (error) {
       this.logger.error(`Refresh token validation error: ${error.message}`);
       throw new HttpException({
@@ -126,7 +133,7 @@ export class AuthService {
     try {
       const user = await this.usersService.findOneById(userId);
       if (user) {
-        return plainToInstance(User, user);
+        return user;
       }
       return undefined;
     } catch (error) {

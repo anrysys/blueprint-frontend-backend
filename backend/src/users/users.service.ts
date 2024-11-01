@@ -3,7 +3,6 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { plainToInstance } from 'class-transformer';
 import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { User } from './user.entity';
 import { UserResponse } from './dto/user-response.dto';
@@ -36,7 +35,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOne({ where: { email } });
       this.logger.log(`User found by email: ${JSON.stringify(user)}`);
-      return user ? plainToInstance(User, user) : undefined;
+      return user;
     } catch (error) {
       this.logger.error(`Find user by email error: ${error.message}`);
       throw new HttpException({
@@ -50,7 +49,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOne({ where: { id } });
       this.logger.log(`User found by ID: ${JSON.stringify(user)}`);
-      return user ? plainToInstance(User, user) : undefined;
+      return user;
     } catch (error) {
       this.logger.error(`Find user by ID error: ${error.message}`);
       throw new HttpException({
