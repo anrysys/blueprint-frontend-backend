@@ -72,6 +72,7 @@ export class AuthService {
       this.logger.log(`Password provided: ${password}`);
       this.logger.log(`Password stored: ${user.password}`);
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      this.logger.log(`Password comparison result: ${isPasswordValid}`);
       if (!isPasswordValid) {
         this.logger.error(`Invalid password for user: ${email}`);
         return null;
