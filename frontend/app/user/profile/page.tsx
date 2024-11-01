@@ -70,7 +70,7 @@ export default function Profile() {
       const data = await response.json();
       Cookies.set('access_token', data.accessToken);
       Cookies.set('refresh_token', data.refreshToken);
-      fetchProfile(); // Fetch profile again after refreshing tokens
+      await fetchProfile(); // Fetch profile again after refreshing tokens
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
       router.push('/login');
