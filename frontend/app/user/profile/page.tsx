@@ -62,7 +62,10 @@ export default function Profile() {
       }
       const data = await response.json();
       console.log('Fetched user data:', data); // Логирование данных пользователя
-      setUserData(data);
+      setUserData({
+        username: data.username || '', // Установка значения по умолчанию для username
+        email: data.email,
+      });
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast.error('Failed to fetch user data.');
@@ -95,6 +98,7 @@ export default function Profile() {
     e.preventDefault();
     try {
       const token = Cookies.get('access_token');
+      console.log('Submitting user data:', userData); // Логирование отправляемых данных
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
@@ -103,6 +107,7 @@ export default function Profile() {
         },
         body: JSON.stringify(userData),
       });
+      console.log('Response status:', response.status); // Логирование статуса ответа
       if (!response.ok) {
         throw new Error('Failed to update profile');
       }
