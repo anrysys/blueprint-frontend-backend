@@ -20,10 +20,8 @@ export class UsersService {
     try {
       const user = this.userRepository.create(createUserDto);
       const savedUser = await this.userRepository.save(user);
-      this.logger.log(`User created: ${JSON.stringify(savedUser)}`);
       return savedUser;
     } catch (error) {
-      this.logger.error(`Create user error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -34,10 +32,8 @@ export class UsersService {
   async findOneByEmail(email: string): Promise<User | undefined> {
     try {
       const user = await this.userRepository.findOne({ where: { email } });
-      this.logger.log(`User found by email: ${JSON.stringify(user)}`);
       return user;
     } catch (error) {
-      this.logger.error(`Find user by email error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -48,10 +44,8 @@ export class UsersService {
   async findOneById(id: number): Promise<User | undefined> {
     try {
       const user = await this.userRepository.findOne({ where: { id } });
-      this.logger.log(`User found by ID: ${JSON.stringify(user)}`);
       return user;
     } catch (error) {
-      this.logger.error(`Find user by ID error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,

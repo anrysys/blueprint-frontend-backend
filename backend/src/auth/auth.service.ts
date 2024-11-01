@@ -28,10 +28,8 @@ export class AuthService {
       user.email = createUserDto.email;
       user.password = hashedPassword;
       const createdUser = await this.usersService.create(user);
-      this.logger.log(`User registered: ${JSON.stringify(createdUser)}`);
       return createdUser;
     } catch (error) {
-      this.logger.error(`Registration error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -45,12 +43,9 @@ export class AuthService {
       if (!user) {
         throw new Error('Invalid credentials');
       }
-      this.logger.log(`User validated: ${JSON.stringify(user)}`);
       const tokens = await this.generateTokens(user);
-      this.logger.log(`Tokens generated: ${JSON.stringify(tokens)}`);
       return tokens;
     } catch (error) {
-      this.logger.error(`Login error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -62,21 +57,14 @@ export class AuthService {
     try {
       const user = await this.usersService.findOneByEmail(email);
       if (!user) {
-        this.logger.error(`User not found with email: ${email}`);
         return null;
       }
-      this.logger.log(`Comparing passwords for user: ${JSON.stringify(user)}`);
-      this.logger.log(`Password provided: ${password}`);
-      this.logger.log(`Password stored: ${user.password}`);
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      this.logger.log(`Password comparison result: ${isPasswordValid}`);
       if (!isPasswordValid) {
-        this.logger.error(`Invalid password for user: ${email}`);
         return null;
       }
       return user;
     } catch (error) {
-      this.logger.error(`Validation error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -91,7 +79,6 @@ export class AuthService {
       const refreshToken = this.jwtService.sign(payload, { expiresIn: process.env.REFRESH_TOKEN_EXPIRED_IN || '7d' });
       return { accessToken, refreshToken };
     } catch (error) {
-      this.logger.error(`Token generation error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -108,7 +95,6 @@ export class AuthService {
       const payload = this.jwtService.verify(refreshToken);
       return { isValid: payload.sub === user.id, user: payload.sub === user.id ? user : undefined };
     } catch (error) {
-      this.logger.error(`Refresh token validation error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -121,7 +107,6 @@ export class AuthService {
       const payload = this.jwtService.verify(token);
       return payload.sub;
     } catch (error) {
-      this.logger.error(`Token validation error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -137,7 +122,6 @@ export class AuthService {
       }
       return undefined;
     } catch (error) {
-      this.logger.error(`Get user by ID error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -149,7 +133,6 @@ export class AuthService {
     try {
       await this.redisService.set(`refresh_token:${userId}`, refreshToken);
     } catch (error) {
-      this.logger.error(`Update refresh token in Redis error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -161,7 +144,6 @@ export class AuthService {
     try {
       await this.redisService.del(`refresh_token:${userId}`);
     } catch (error) {
-      this.logger.error(`Revoke refresh token error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
