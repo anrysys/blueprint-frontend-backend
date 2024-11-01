@@ -3,11 +3,14 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { RedisService } from '../redis/redis.service';
+import * as dotenv from 'dotenv';
+import { RedisService } from '../redis/redis.service'; // Импорт RedisService
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+
+dotenv.config(); // Загрузка переменных из .env
 
 @Injectable()
 export class AuthService {
@@ -16,7 +19,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
-    private readonly redisService: RedisService,
+    private readonly redisService: RedisService, 
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -46,8 +49,9 @@ export class AuthService {
 
   async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = { username: user.username, sub: user.id, email: user.email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: process.env.ACCESS_TOKEN_EXPIRED_IN || '15m' });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: process.env.REFRESH_TOKEN_EXPIRED_IN || '7d' });
+    // await this.updateRefreshTokenInRedis(user.id, refreshToken); // Обновление токена в Redis
     return { accessToken, refreshToken };
   }
 
@@ -67,6 +71,17 @@ export class AuthService {
 
   async getUserById(userId: number): Promise<User> {
     return this.usersService.findOneById(userId);
+  }
+
+  async updateRefreshTokenInRedis(userId: number, refreshToken: string): Promise<void> {
+    try {
+      await this.redisService.set(`refresh_token:${userId}`, refreshToken);
+    } catch (error) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async revokeRefreshToken(userId: string): Promise<void> {
