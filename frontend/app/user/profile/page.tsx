@@ -112,6 +112,17 @@ export default function Profile() {
     }
   };
 
+  const handleLogout = () => {
+    try {
+      Cookies.remove('access_token');
+      Cookies.remove('refresh_token');
+      toast.success('You have successfully logged out!');
+      router.push('/login');
+    } catch (error) {
+      toast.error('Failed to logout.');
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -140,6 +151,7 @@ export default function Profile() {
         </div>
         <button type="submit">Update Profile</button>
       </form>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 }
