@@ -49,7 +49,7 @@ export class AuthService {
         throw new Error('Invalid credentials');
       }
       this.logger.log(`User validated: ${JSON.stringify(user)}`);
-      const tokens = await this.generateTokens(user);
+      const tokens = await this.generateTokens(plainToInstance(User, user));
       this.logger.log(`Tokens generated: ${JSON.stringify(tokens)}`);
       return tokens;
     } catch (error) {
@@ -64,20 +64,10 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<User | null> {
     try {
       const user = await this.usersService.findOneByEmail(email);
-      if (!user) {
-        this.logger.error(`User not found with email: ${email}`);
-        return null;
+      if (user && await bcrypt.compare(password, user.password)) {
+        return user;
       }
-      this.logger.log(`Comparing passwords for user: ${JSON.stringify(user)}`);
-      this.logger.log(`Password provided: ${password}`);
-      this.logger.log(`Password stored: ${user.password}`);
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      this.logger.log(`Password comparison result: ${isPasswordValid}`);
-      if (!isPasswordValid) {
-        this.logger.error(`Invalid password for user: ${email}`);
-        return null;
-      }
-      return user;
+      return null;
     } catch (error) {
       this.logger.error(`Validation error: ${error.message}`);
       throw new HttpException({
