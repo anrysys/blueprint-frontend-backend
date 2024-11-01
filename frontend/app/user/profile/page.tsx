@@ -62,10 +62,12 @@ export default function Profile() {
       }
       const data = await response.json();
       console.log('Fetched user data:', data); // Логирование данных пользователя
-      setUserData({
-        username: data.username || '', // Установка значения по умолчанию для username
-        email: data.email,
-      });
+      if (data) {
+        setUserData({
+          username: data.username || '', // Установка значения по умолчанию для username
+          email: data.email || '',
+        });
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast.error('Failed to fetch user data.');
