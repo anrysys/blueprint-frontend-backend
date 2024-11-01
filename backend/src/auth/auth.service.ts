@@ -31,6 +31,7 @@ export class AuthService {
       user.email = createUserDto.email;
       user.password = hashedPassword;
       const createdUser = await this.usersService.create(user);
+      this.logger.log(`User registered: ${JSON.stringify(createdUser)}`);
       return plainToClass(User, createdUser);
     } catch (error) {
       this.logger.error(`Registration error: ${error.message}`);
@@ -47,7 +48,10 @@ export class AuthService {
       if (!user) {
         throw new Error('Invalid credentials');
       }
-      return this.generateTokens(plainToClass(User, user));
+      this.logger.log(`User validated: ${JSON.stringify(user)}`);
+      const tokens = await this.generateTokens(plainToClass(User, user));
+      this.logger.log(`Tokens generated: ${JSON.stringify(tokens)}`);
+      return tokens;
     } catch (error) {
       this.logger.error(`Login error: ${error.message}`);
       throw new HttpException({
