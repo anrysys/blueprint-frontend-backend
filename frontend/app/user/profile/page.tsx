@@ -12,107 +12,82 @@ export default function Profile() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [tokensRefreshed, setTokensRefreshed] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = Cookies.get('access_token');
-        if (!token) {
-          throw new Error('No access token found');
-        }
+  const fetchProfile = async () => {
+    try {
+      const token = Cookies.get('access_token');
+      if (!token) {
+        throw new Error('No access token found');
+      }
 
-        const response = await fetch('/api/user/profile', {
+      let response = await fetch('/api/user/profile', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        await refreshTokens();
+        response = await fetch('/api/user/profile', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${Cookies.get('access_token')}`,
           },
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch profile');
-        }
-
-        const data = await response.json();
-        setUsername(data.username || '');
-        setEmail(data.email || '');
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    if (tokensRefreshed) {
-      fetchProfile();
+      if (!response.ok) {
+        throw new Error('Failed to fetch profile');
+      }
+
+      const data = await response.json();
+      setUsername(data.username || '');
+      setEmail(data.email || '');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
+    } finally {
+      setIsLoading(false);
     }
-  }, [tokensRefreshed]);
+  };
+
+  const refreshTokens = async () => {
+    try {
+      const refreshToken = Cookies.get('refresh_token');
+      if (!refreshToken) {
+        throw new Error('No refresh token found');
+      }
+
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh tokens');
+      }
+
+      const data = await response.json();
+      Cookies.set('access_token', data.accessToken);
+      Cookies.set('refresh_token', data.refreshToken);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
+      router.push('/login');
+    }
+  };
 
   useEffect(() => {
-    const refreshTokens = async () => {
-      try {
-        const refreshToken = Cookies.get('refresh_token');
-        if (!refreshToken) {
-          throw new Error('No refresh token found');
-        }
-
-        const response = await fetch('/api/auth/refresh', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ refreshToken }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to refresh tokens');
-        }
-
-        const data = await response.json();
-        Cookies.set('access_token', data.accessToken);
-        Cookies.set('refresh_token', data.refreshToken);
-        setTokensRefreshed(true);
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
-        router.push('/login');
-      }
-    };
-
-    refreshTokens();
+    fetchProfile();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const refreshTokens = async () => {
-      try {
-        const refreshToken = Cookies.get('refresh_token');
-        if (!refreshToken) {
-          throw new Error('No refresh token found');
-        }
-
-        const response = await fetch('/api/auth/refresh', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ refreshToken }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to refresh tokens');
-        }
-
-        const data = await response.json();
-        Cookies.set('access_token', data.accessToken);
-        Cookies.set('refresh_token', data.refreshToken);
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
-        router.push('/login');
-      }
-    };
-
     try {
       const token = Cookies.get('access_token');
       if (!token) {
