@@ -21,7 +21,7 @@ export default function Profile() {
         throw new Error('No access token found');
       }
 
-      let response = await fetch('/api/user/profile', {
+      const response = await fetch('/api/user/profile', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -31,13 +31,7 @@ export default function Profile() {
 
       if (response.status === 401) {
         await refreshTokens();
-        response = await fetch('/api/user/profile', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${Cookies.get('access_token')}`,
-          },
-        });
+        return;
       }
 
       if (!response.ok) {
@@ -76,6 +70,7 @@ export default function Profile() {
       const data = await response.json();
       Cookies.set('access_token', data.accessToken);
       Cookies.set('refresh_token', data.refreshToken);
+      fetchProfile(); // Fetch profile again after refreshing tokens
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
       router.push('/login');
