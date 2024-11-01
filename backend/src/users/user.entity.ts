@@ -1,6 +1,6 @@
 // src/users/user.entity.ts
 
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from '../posts/post.entity';
 
@@ -22,8 +22,4 @@ export class User {
 
   @OneToMany(() => Post, post => post.user)
   posts: Post[];
-
-  // Удалите это поле, так как мы больше не используем таблицу refresh_token
-  // @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
-  // refreshTokens: RefreshToken[];
 }

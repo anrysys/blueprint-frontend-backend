@@ -3,8 +3,8 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
 import * as dotenv from 'dotenv';
-import { plainToClass } from 'class-transformer';
 import { RedisService } from '../redis/redis.service'; // Импорт RedisService
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
@@ -32,7 +32,7 @@ export class AuthService {
       user.password = hashedPassword;
       const createdUser = await this.usersService.create(user);
       this.logger.log(`User registered: ${JSON.stringify(createdUser)}`);
-      return plainToClass(User, createdUser);
+      return plainToInstance(User, createdUser);
     } catch (error) {
       this.logger.error(`Registration error: ${error.message}`);
       throw new HttpException({
@@ -49,7 +49,7 @@ export class AuthService {
         throw new Error('Invalid credentials');
       }
       this.logger.log(`User validated: ${JSON.stringify(user)}`);
-      const tokens = await this.generateTokens(plainToClass(User, user));
+      const tokens = await this.generateTokens(plainToInstance(User, user));
       this.logger.log(`Tokens generated: ${JSON.stringify(tokens)}`);
       return tokens;
     } catch (error) {
@@ -99,7 +99,7 @@ export class AuthService {
         return { isValid: false };
       }
       const payload = this.jwtService.verify(refreshToken);
-      return { isValid: payload.sub === user.id, user: payload.sub === user.id ? plainToClass(User, user) : undefined };
+      return { isValid: payload.sub === user.id, user: payload.sub === user.id ? plainToInstance(User, user) : undefined };
     } catch (error) {
       this.logger.error(`Refresh token validation error: ${error.message}`);
       throw new HttpException({
@@ -126,7 +126,7 @@ export class AuthService {
     try {
       const user = await this.usersService.findOneById(userId);
       if (user) {
-        return plainToClass(User, user);
+        return plainToInstance(User, user);
       }
       return undefined;
     } catch (error) {
