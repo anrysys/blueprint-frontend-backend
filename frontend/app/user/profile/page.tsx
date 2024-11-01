@@ -26,6 +26,7 @@ export default function Profile() {
 
   const fetchUserData = useCallback(async (token: string) => {
     try {
+      console.log('Fetching user data with token:', token); // Логирование токена
       const response = await fetch('/api/user/profile', {
         method: 'GET',
         headers: {
@@ -33,6 +34,7 @@ export default function Profile() {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log('Response status:', response.status); // Логирование статуса ответа
       if (!response.ok) {
         if (response.status === 401) {
           // Token expired, try to refresh it
@@ -43,8 +45,10 @@ export default function Profile() {
             },
             body: JSON.stringify({ refreshToken: Cookies.get('refresh_token') }),
           });
+          console.log('Refresh response status:', refreshResponse.status); // Логирование статуса ответа обновления
           if (refreshResponse.ok) {
             const refreshData = await refreshResponse.json();
+            console.log('Refresh data:', refreshData); // Логирование данных обновления
             Cookies.set('access_token', refreshData.accessToken);
             Cookies.set('refresh_token', refreshData.refreshToken);
             fetchUserData(refreshData.accessToken);
@@ -57,6 +61,7 @@ export default function Profile() {
         }
       }
       const data = await response.json();
+      console.log('Fetched user data:', data); // Логирование данных пользователя
       setUserData(data);
     } catch (error) {
       console.error('Error fetching user data:', error);
