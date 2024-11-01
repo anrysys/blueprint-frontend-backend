@@ -19,7 +19,7 @@ export class UserController {
       const userId = req.user.id;
       const user = await this.usersService.findOneById(userId);
       if (user) {
-        const { password, ...userWithoutPassword } = user;
+        const userWithoutPassword = user.toJSON();
         return res.json(userWithoutPassword);
       } else {
         return res.status(404).json({ message: 'User not found' });

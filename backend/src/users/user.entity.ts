@@ -20,4 +20,9 @@ export class User {
 
   @OneToMany(() => Post, post => post.user)
   posts: Post[];
+
+  toJSON() {
+    const { password, ...userWithoutPassword } = this;
+    return userWithoutPassword;
+  }
 }
