@@ -23,64 +23,122 @@ export class AuthService {
     private readonly redisService: RedisService, 
   ) {}
 
-  async register(createUserDto: CreateUserDto): Promise<User> {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const user = new User();
-    user.username = createUserDto.username;
-    user.email = createUserDto.email;
-    user.password = hashedPassword;
-    return this.usersService.create(user);
+  async register(createUserDto: CreateUserDto): Promise<UserResponse> {
+    try {
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      const user = new User();
+      user.username = createUserDto.username;
+      user.email = createUserDto.email;
+      user.password = hashedPassword;
+      const createdUser = await this.usersService.create(user);
+      return this.usersService.toUserResponse(createdUser);
+    } catch (error) {
+      this.logger.error(`Registration error: ${error.message}`);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string; refreshToken: string }> {
-    const user = await this.validateUser(loginUserDto.email, loginUserDto.password);
-    if (!user) {
-      throw new Error('Invalid credentials');
+    try {
+      const user = await this.validateUser(loginUserDto.email, loginUserDto.password);
+      if (!user) {
+        throw new Error('Invalid credentials');
+      }
+      return this.generateTokens(this.usersService.toUserResponse(user));
+    } catch (error) {
+      this.logger.error(`Login error: ${error.message}`);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return this.generateTokens(this.usersService.toUserResponse(user));
   }
 
   async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.usersService.findOneByEmail(email);
-    if (user && await bcrypt.compare(password, user.password)) {
-      return user;
+    try {
+      const user = await this.usersService.findOneByEmail(email);
+      if (user && await bcrypt.compare(password, user.password)) {
+        return user;
+      }
+      return null;
+    } catch (error) {
+      this.logger.error(`Validation error: ${error.message}`);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return null;
   }
 
   async generateTokens(user: UserResponse): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload = { username: user.username, sub: user.id, email: user.email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: process.env.ACCESS_TOKEN_EXPIRED_IN || '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: process.env.REFRESH_TOKEN_EXPIRED_IN || '7d' });
-    return { accessToken, refreshToken };
+    try {
+      const payload = { username: user.username, sub: user.id, email: user.email };
+      const accessToken = this.jwtService.sign(payload, { expiresIn: process.env.ACCESS_TOKEN_EXPIRED_IN || '15m' });
+      const refreshToken = this.jwtService.sign(payload, { expiresIn: process.env.REFRESH_TOKEN_EXPIRED_IN || '7d' });
+      return { accessToken, refreshToken };
+    } catch (error) {
+      this.logger.error(`Token generation error: ${error.message}`);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async validateRefreshToken(userId: number, refreshToken: string): Promise<{ isValid: boolean, user?: UserResponse }> {
-    const user = await this.usersService.findOneById(userId);
-    if (!user) {
-      return { isValid: false };
+    try {
+      const user = await this.usersService.findOneById(userId);
+      if (!user) {
+        return { isValid: false };
+      }
+      const payload = this.jwtService.verify(refreshToken);
+      return { isValid: payload.sub === user.id, user: payload.sub === user.id ? this.usersService.toUserResponse(user) : undefined };
+    } catch (error) {
+      this.logger.error(`Refresh token validation error: ${error.message}`);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    const payload = this.jwtService.verify(refreshToken);
-    return { isValid: payload.sub === user.id, user: payload.sub === user.id ? this.usersService.toUserResponse(user) : undefined };
   }
 
   getUserIdFromToken(token: string): number {
-    const payload = this.jwtService.verify(token);
-    return payload.sub;
+    try {
+      const payload = this.jwtService.verify(token);
+      return payload.sub;
+    } catch (error) {
+      this.logger.error(`Token validation error: ${error.message}`);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async getUserById(userId: number): Promise<UserResponse> {
-    const user = await this.usersService.findOneById(userId);
-    if (user) {
-      return this.usersService.toUserResponse(user);
+    try {
+      const user = await this.usersService.findOneById(userId);
+      if (user) {
+        return this.usersService.toUserResponse(user);
+      }
+      return undefined;
+    } catch (error) {
+      this.logger.error(`Get user by ID error: ${error.message}`);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return undefined;
   }
 
   async updateRefreshTokenInRedis(userId: number, refreshToken: string): Promise<void> {
     try {
       await this.redisService.set(`refresh_token:${userId}`, refreshToken);
     } catch (error) {
+      this.logger.error(`Update refresh token in Redis error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -92,6 +150,7 @@ export class AuthService {
     try {
       await this.redisService.del(`refresh_token:${userId}`);
     } catch (error) {
+      this.logger.error(`Revoke refresh token error: ${error.message}`);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
