@@ -1,6 +1,6 @@
 // src/users/users.service.ts
 
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../auth/dto/create-user.dto';
@@ -9,8 +9,6 @@ import { UserResponse } from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
-
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,

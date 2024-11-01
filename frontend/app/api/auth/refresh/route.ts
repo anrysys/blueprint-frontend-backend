@@ -9,10 +9,6 @@ export async function POST(req: Request) {
     }
   
     const body = await req.json();
-    //const { refreshToken } = body;
-
-
-    console.log('\n\n\n--------POST /auth/refresh - Body:', JSON.stringify  (body));
   
     try {
       const res = await fetch(url, {
@@ -21,15 +17,10 @@ export async function POST(req: Request) {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify  (body),
-        // body: JSON.stringify({
-        //   refreshToken,
-        // }),        
+        body: JSON.stringify(body),
       });
   
       const data = await res.json();
-
-      console.log('\n\n\n--------Tokens generated (auth/refresh):', JSON.stringify(data));
   
       if (!res.ok) {
         throw new Error(data.message);
@@ -40,7 +31,6 @@ export async function POST(req: Request) {
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      console.error('Error during token refresh:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       return new Response(JSON.stringify({ error: errorMessage }), {
         status: 500,
