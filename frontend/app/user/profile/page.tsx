@@ -15,10 +15,8 @@ export default function Profile() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const setIsAuthenticated = useAuthStore((state) => state.setIsAuthenticated);
   const logout = useAuthStore((state) => state.logout);
-  const [userData, setUserData] = useState({
-    username: '',
-    email: '',
-  });
+  const [userData, setUserData] = useState({ username: '', email: '' });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
@@ -68,10 +66,17 @@ export default function Profile() {
           username: data.username ?? '', // Установка значения по умолчанию для username
           email: data.email ?? '',
         });
+        console.log('Updated userData state:', {
+          username: data.username ?? '',
+          email: data.email ?? '',
+        }); // Логирование состояния userData после установки
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast.error('Failed to fetch user data.');
+    } finally {
+      console.log('Setting isLoading to false'); // Логирование изменения состояния isLoading
+      setIsLoading(false);
     }
   }, []);
 
@@ -121,9 +126,12 @@ export default function Profile() {
     }
   };
 
-  if (!isClient || !isAuthenticated) {
-    return null; // Или можно показать загрузочный экран
+  if (!isClient || !isAuthenticated || isLoading) {
+    console.log('Loading...'); // Логирование состояния загрузки
+    return <div>Loading...</div>; // Показать загрузочный экран
   }
+
+  console.log('Rendering Profile component with userData:', userData); // Логирование состояния userData при рендере
 
   const handleLogout = () => {
     logout();
