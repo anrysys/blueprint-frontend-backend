@@ -57,8 +57,10 @@ export class AuthController {
       const { refreshToken } = body;
       const userId = this.authService.getUserIdFromToken(refreshToken);
 
-      if (await this.authService.validateRefreshToken(userId, refreshToken)) {
-        const tokens = await this.authService.generateTokens({ id: userId } as User);
+      const { isValid, user } = await this.authService.validateRefreshToken(userId, refreshToken);
+
+      if (isValid && user) {
+        const tokens = await this.authService.generateTokens(user);
         res.cookie('refresh_token', tokens.refreshToken, { httpOnly: true });
         res.cookie('access_token', tokens.accessToken, { httpOnly: true });
         return res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });

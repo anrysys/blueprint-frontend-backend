@@ -55,13 +55,13 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async validateRefreshToken(userId: number, refreshToken: string): Promise<boolean> {
+  async validateRefreshToken(userId: number, refreshToken: string): Promise<{ isValid: boolean, user?: User }> {
     const user = await this.usersService.findOneById(userId);
     if (!user) {
-      return false;
+      return { isValid: false };
     }
     const payload = this.jwtService.verify(refreshToken);
-    return payload.sub === user.id;
+    return { isValid: payload.sub === user.id, user: payload.sub === user.id ? user : undefined };
   }
 
   getUserIdFromToken(token: string): number {

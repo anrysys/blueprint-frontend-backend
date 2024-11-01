@@ -85,17 +85,7 @@ export default function Profile() {
       const data = await response.json();
       Cookies.set('access_token', data.accessToken);
       Cookies.set('refresh_token', data.refreshToken);
-
-      // Проверка соответствия токена и данных пользователя после обновления токена
-      const newToken = Cookies.get('access_token');
-      if (newToken) {
-        const decodedToken: DecodedToken = jwtDecode(newToken);
-        if (decodedToken.sub === data.id) {
-          await fetchProfile(); // Fetch profile again after refreshing tokens
-        } else {
-          throw new Error('Token mismatch after refresh');
-        }
-      }
+      await fetchProfile(); // Fetch profile again after refreshing tokens
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
       router.push('/login');
