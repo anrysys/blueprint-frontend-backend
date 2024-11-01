@@ -11,7 +11,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     this.logger.log('JwtAuthGuard canActivate called');
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization;
-    this.logger.log(`Authorization header (ПОЧЕМУ ТУТ ДРУГОЕ???) ${token}`);
+    // if (!token) {
+    //   this.logger.error('Token not found');
+    //   throw new UnauthorizedException('Token not found');
+    // }
     return super.canActivate(context);
   }
 

@@ -70,9 +70,9 @@ export default function Profile() {
         throw new Error('No refresh token found');
       }
 
-      // Сохраняем текущие данные пользователя
-      const currentUsername = username;
-      const currentEmail = email;
+      // Сохраняем текущие данные пользователя в localStorage
+      localStorage.setItem('username', username);
+      localStorage.setItem('email', email);
 
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
@@ -90,9 +90,9 @@ export default function Profile() {
       Cookies.set('access_token', data.accessToken);
       Cookies.set('refresh_token', data.refreshToken);
 
-      // Восстанавливаем данные пользователя после обновления токенов
-      setUsername(currentUsername);
-      setEmail(currentEmail);
+      // Восстанавливаем данные пользователя из localStorage после обновления токенов
+      setUsername(localStorage.getItem('username') || '');
+      setEmail(localStorage.getItem('email') || '');
 
       await fetchProfile(); // Fetch profile again after refreshing tokens
     } catch (error) {
@@ -102,6 +102,9 @@ export default function Profile() {
   };
 
   useEffect(() => {
+    // Восстанавливаем данные пользователя из localStorage при загрузке компонента
+    setUsername(localStorage.getItem('username') || '');
+    setEmail(localStorage.getItem('email') || '');
     fetchProfile();
   }, []);
 
