@@ -3,10 +3,10 @@
 'use client';
 
 import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
-import { jwtDecode } from 'jwt-decode';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface DecodedToken {
