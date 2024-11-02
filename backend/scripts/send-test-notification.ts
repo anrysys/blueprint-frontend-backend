@@ -20,7 +20,7 @@ async function bootstrap() {
 
     // Убедимся, что VAPID ключи установлены
     notificationsService.setVapidDetails(
-      'mailto:example@yourdomain.org',
+      process.env.VAPID_MAILTO,
       process.env.VAPID_PUBLIC_KEY,
       process.env.VAPID_PRIVATE_KEY
     );

@@ -16,7 +16,7 @@ export class NotificationsService {
     private readonly subscriptionRepository: Repository<Subscription>,
   ) {
     webpush.setVapidDetails(
-      'mailto:example@yourdomain.org',
+      process.env.VAPID_MAILTO,
       process.env.VAPID_PUBLIC_KEY,
       process.env.VAPID_PRIVATE_KEY,
     );
