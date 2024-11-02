@@ -13,10 +13,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(JwtStrategy.name);
   
   constructor(private readonly usersService: UsersService) {
-
-    // logger for process.env.JWT_SECRET
-    console.log('process.env.JWT_SECRET 11333: ', process.env.JWT_SECRET);
-
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

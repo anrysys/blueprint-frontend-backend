@@ -25,15 +25,12 @@ export async function POST(req: Request) {
 
     const data = await res.json();
 
-    console.log("rew data", data);
-
     // If the response is not successful, throw an error
     if (data.status == 'fail') {
         throw new Error(data.message);
     }
 
     // Return the response
-    console.log("server data", data);
     return new Response(JSON.stringify(data), {
         status: res.status,
         headers: { 'Content-Type': 'application/json' },

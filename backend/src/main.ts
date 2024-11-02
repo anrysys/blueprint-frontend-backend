@@ -10,10 +10,6 @@ dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // // Вывод переменных окружения в консоль
-  // console.log('NODE_ENV:', process.env.NODE_ENV);
-  // console.log('JWT Secret:', process.env.JWT_SECRET);
-
   // Включение глобальной валидации
   app.useGlobalPipes(new ValidationPipe());
 
