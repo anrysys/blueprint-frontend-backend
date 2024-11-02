@@ -18,7 +18,6 @@ interface DecodedToken {
 export default function Profile() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [userId, setUserId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const isFetching = useRef(false);
@@ -55,7 +54,6 @@ export default function Profile() {
       if (decodedToken.sub === data.id) { // Проверка, что ID пользователя совпадает
         setUsername(data.username || '');
         setEmail(data.email || '');
-        setUserId(data.id);
 
         // Сохраняем текущие данные пользователя в localStorage
         localStorage.setItem('username', data.username || '');
@@ -96,7 +94,6 @@ export default function Profile() {
       // Восстанавливаем данные пользователя из localStorage после обновления токенов
       setUsername(localStorage.getItem('username') || '');
       setEmail(localStorage.getItem('email') || '');
-      setUserId(parseInt(localStorage.getItem('userId') || '0', 10));
 
       await fetchProfile(); // Fetch profile again after refreshing tokens
     } catch (error) {
@@ -109,7 +106,6 @@ export default function Profile() {
     // Восстанавливаем данные пользователя из localStorage при загрузке компонента
     setUsername(localStorage.getItem('username') || '');
     setEmail(localStorage.getItem('email') || '');
-    setUserId(parseInt(localStorage.getItem('userId') || '0', 10));
     fetchProfile();
   }, []);
 
