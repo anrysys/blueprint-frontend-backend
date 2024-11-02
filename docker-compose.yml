@@ -1,12 +1,6 @@
-#version: '3.8'
+version: '3.8'
 
 services:
-
-# DB_HOST=localhost
-# DB_NAME=postgres
-# DB_USERNAME=postgres
-# DB_PASSWORD=postgres
-# DB_PORT=5432
 
   db:
     container_name: db
@@ -31,35 +25,35 @@ services:
     #  REDIS_PASSWORD: ${REDIS_PASSWORD}
     restart: unless-stopped
 
-  # backend:
-  #   container_name: backend
-  #   build: ./backend
-  #   #image: anrysys/anry-full-stack-next-backend:latest
-  #   ports:
-  #     - '4000:4000'
-  #   depends_on:
-  #     - db
-  #   environment:
-  #     DB_HOST: ${DB_HOST}
-  #     DB_NAME: ${DB_NAME}
-  #     DB_USER: ${DB_USERNAME}
-  #     DB_PASSWORD: ${DB_PASSWORD}
-  #     DB_PORT: ${DB_PORT}
-  #   command: >
-  #     sh -c "
-  #       ./migrations/apply_migrations.sh &&
-  #       npm start
-  #     "
-  # frontend:
-  #   container_name: frontend
-  #   build: ./frontend
-  #   #image: anrysys/anry-full-stack-next-frontend:latest
-  #   ports:
-  #     - '3000:3000'
-  #   depends_on:
-  #     - backend
-  #   environment:
-  #     BACKEND_HOST: backend
+  backend:
+    container_name: backend
+    build: ./backend
+    #image: anrysys/anry-full-stack-next-backend:latest
+    ports:
+      - '4000:4000'
+    depends_on:
+      - db
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: ${DB_PORT}
+    command: >
+      sh -c "
+        ./migrations/apply_migrations.sh &&
+        npm start
+      "
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    #image: anrysys/anry-full-stack-next-frontend:latest
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+    environment:
+      BACKEND_HOST: backend
 
 
 volumes:
