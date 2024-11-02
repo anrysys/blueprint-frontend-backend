@@ -12,8 +12,6 @@ export async function GET(req: Request) {
   if (!token) {
     throw new Error('Token is missing');
   }
-  console.log('GET /user/profile - Headers:', JSON.stringify(headers));
-  console.log('Token from headers:', token);
 
   const response = await fetch(url, {
     method: 'GET',
@@ -24,7 +22,6 @@ export async function GET(req: Request) {
     },
   });
   const data = await response.json();
-  console.log('Tokens generated (user/profile):', JSON.stringify(data));
   return new Response(JSON.stringify(data), {
     status: response.status,
     headers: { 'Content-Type': 'application/json' },
@@ -41,8 +38,6 @@ export async function PUT(req: Request) {
   if (!token) {
     throw new Error('Token is missing');
   }
-  console.log('PUT /user/profile - Headers:', JSON.stringify(headers));
-  console.log('Token from headers:', token);
 
   const body = await req.json();
   const response = await fetch(url, {
@@ -55,7 +50,6 @@ export async function PUT(req: Request) {
     body: JSON.stringify(body),
   });
   const data = await response.json();
-  console.log('Tokens generated (user/profile):', JSON.stringify(data));
   return new Response(JSON.stringify(data), {
     status: response.status,
     headers: { 'Content-Type': 'application/json' },
