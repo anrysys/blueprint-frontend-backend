@@ -6,6 +6,8 @@ import { LoggerMiddleware } from './logger.middleware';
 import { PostsModule } from './posts/posts.module';
 import { UserModule } from './user/user.module';
 import { UsersModule } from './users/users.module';
+import { NotificationsService } from './notifications/notifications.service';
+import { Subscription } from './notifications/subscription.entity';
 
 @Module({
   imports: [
@@ -14,7 +16,9 @@ import { UsersModule } from './users/users.module';
     PostsModule,
     AuthModule,
     UserModule,
+    TypeOrmModule.forFeature([Subscription]),
   ],
+  providers: [NotificationsService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

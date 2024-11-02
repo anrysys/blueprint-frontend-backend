@@ -1,10 +1,10 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
+import { Subscription } from '../notifications/subscription.entity';
 import { Post } from '../posts/post.entity';
 import { User } from '../users/user.entity';
 
-//dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
 export const typeOrmConfig: TypeOrmModuleOptions = {
@@ -14,8 +14,8 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, Post],
-  synchronize: false, // Измените на false для использования миграций
+  entities: [User, Post, Subscription],
+  synchronize: true, // Измените на true для автоматического создания таблиц
 };
 
 export const AppDataSource = new DataSource({
