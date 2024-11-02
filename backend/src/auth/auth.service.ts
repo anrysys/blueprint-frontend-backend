@@ -42,6 +42,7 @@ export class AuthService {
         throw new Error('Invalid credentials');
       }
       const tokens = await this.generateTokens(user);
+      await this.updateRefreshTokenInRedis(user.id, tokens.refreshToken);
       return tokens;
     } catch (error) {
       throw new HttpException({
@@ -129,7 +130,8 @@ export class AuthService {
 
   async updateRefreshTokenInRedis(userId: number, refreshToken: string): Promise<void> {
     try {
-      await this.redisService.set(`refresh_token:${userId}`, refreshToken);
+      const refreshTokenTTL = parseInt(process.env.REFRESH_TOKEN_MAXAGE, 10);
+      await this.redisService.set(`refresh_token:${userId}`, refreshToken, refreshTokenTTL);
     } catch (error) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
