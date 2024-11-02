@@ -1,4 +1,4 @@
-# Setellite Full-Stack Docker Docker Compose / Swarm
+# Blueprint Full Stack Application with Docker Compose/Swarm
 
 Full-stack application built with TypeScript, using Next.js for the frontend, NestJS for the backend, and Blueprint for styling. The backend exposes a RESTful API secured with JWT authentication.
 
