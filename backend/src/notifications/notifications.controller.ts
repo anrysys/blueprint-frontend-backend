@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException, HttpStatus, Logger, Post, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, HttpException, HttpStatus, Logger, Post } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { NotificationsService } from './notifications.service';
 
