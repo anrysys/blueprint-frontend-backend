@@ -35,13 +35,31 @@ export class NotificationsService {
     try {
       this.logger.log('Received subscription:', createSubscriptionDto);
 
-      const existingSubscription = await this.subscriptionRepository.findOne({
+      if (!createSubscriptionDto.keys || !createSubscriptionDto.keys.p256dh || !createSubscriptionDto.keys.auth) {
+        throw new HttpException('Subscription keys are missing or invalid', HttpStatus.BAD_REQUEST);
+      }
+
+      // Check if subscription already exists by endpoint
+      const existingSubscriptionByEndpoint = await this.subscriptionRepository.findOne({
         where: { endpoint: createSubscriptionDto.endpoint },
       });
 
-      if (existingSubscription) {
-        this.logger.log('Subscription already exists with matching endpoint:', existingSubscription);
-        return existingSubscription;
+      if (existingSubscriptionByEndpoint) {
+        this.logger.log('Subscription already exists with matching endpoint:', existingSubscriptionByEndpoint);
+        return existingSubscriptionByEndpoint;
+      }
+
+      // Check if subscription already exists by keys
+      const existingSubscriptionByKeys = await this.subscriptionRepository.createQueryBuilder('subscription')
+        .where('subscription.keys->>\'p256dh\' = :p256dh AND subscription.keys->>\'auth\' = :auth', { 
+          p256dh: createSubscriptionDto.keys.p256dh, 
+          auth: createSubscriptionDto.keys.auth 
+        })
+        .getOne();
+
+      if (existingSubscriptionByKeys) {
+        this.logger.log('Subscription already exists with matching keys:', existingSubscriptionByKeys);
+        return existingSubscriptionByKeys;
       }
 
       const subscription = this.subscriptionRepository.create({

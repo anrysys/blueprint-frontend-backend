@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 @Index(['endpoint', 'keys'], { unique: true })
@@ -9,7 +9,7 @@ export class Subscription {
   @Column()
   endpoint: string;
 
-  @Column('jsonb')
+  @Column('jsonb', { nullable: false, default: '{}' })
   keys: {
     p256dh: string;
     auth: string;
