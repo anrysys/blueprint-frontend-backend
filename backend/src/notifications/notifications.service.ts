@@ -40,6 +40,16 @@ export class NotificationsService {
       if (createSubscriptionDto.keys.p256dh.length !== 88) {
         throw new HttpException('Invalid p256dh key length', HttpStatus.BAD_REQUEST);
       }
+
+      // Check if subscription already exists
+      const existingSubscription = await this.subscriptionRepository.findOne({
+        where: { endpoint: createSubscriptionDto.endpoint },
+      });
+      if (existingSubscription) {
+        this.logger.log('Subscription already exists:', existingSubscription);
+        return existingSubscription;
+      }
+
       const subscription = this.subscriptionRepository.create({
         endpoint: createSubscriptionDto.endpoint,
         keys: createSubscriptionDto.keys,
