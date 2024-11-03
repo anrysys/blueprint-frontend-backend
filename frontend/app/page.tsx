@@ -14,11 +14,15 @@ export default function Home() {
       navigator.serviceWorker.register('/service-worker.js')
         .then(async registration => {
           console.log('Service Worker registered with scope:', registration.scope);
-          const existingSubscription = await registration.pushManager.getSubscription();
-          if (!existingSubscription) {
-            subscribe();
-          } else {
-            console.log('User is already subscribed:', existingSubscription);
+          try {
+            const existingSubscription = await registration.pushManager.getSubscription();
+            if (!existingSubscription) {
+              subscribe();
+            } else {
+              console.log('User is already subscribed:', existingSubscription);
+            }
+          } catch (error) {
+            console.error('Error during subscription check:', error);
           }
         })
         .catch(error => {

@@ -45,9 +45,17 @@ export class NotificationsService {
       const existingSubscription = await this.subscriptionRepository.findOne({
         where: { endpoint: createSubscriptionDto.endpoint },
       });
+
       if (existingSubscription) {
-        this.logger.log('Subscription already exists:', existingSubscription);
-        return existingSubscription;
+        // Check if the keys match
+        if (JSON.stringify(existingSubscription.keys) === JSON.stringify(createSubscriptionDto.keys)) {
+          this.logger.log('Subscription already exists with matching keys:', existingSubscription);
+          return existingSubscription;
+        } else {
+          this.logger.log('Subscription exists but keys do not match. Updating keys.');
+          existingSubscription.keys = createSubscriptionDto.keys;
+          return await this.subscriptionRepository.save(existingSubscription);
+        }
       }
 
       const subscription = this.subscriptionRepository.create({
