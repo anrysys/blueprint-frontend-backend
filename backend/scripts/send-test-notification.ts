@@ -31,10 +31,10 @@ async function bootstrap() {
     const subscriptions = await notificationsService.getAllSubscriptions();
     console.log('Subscriptions:', subscriptions);
 
-    const payload = {
+    const payload = JSON.stringify({
       title: 'Test Notification',
       body: 'This is a test notification',
-    };
+    });
 
     for (const subscription of subscriptions) {
       console.log('Sending notification to:', subscription);

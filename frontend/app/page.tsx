@@ -12,13 +12,13 @@ export default function Home() {
     if ('serviceWorker' in navigator) {
       console.log('Registering Service Worker...');
       navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
+        .then(async registration => {
           console.log('Service Worker registered with scope:', registration.scope);
-          const existingSubscription = localStorage.getItem('subscription');
+          const existingSubscription = await registration.pushManager.getSubscription();
           if (!existingSubscription) {
             subscribe();
           } else {
-            console.log('User is already subscribed:', JSON.parse(existingSubscription));
+            console.log('User is already subscribed:', existingSubscription);
           }
         })
         .catch(error => {
