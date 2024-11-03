@@ -42,14 +42,12 @@ export class NotificationsService {
       }
 
       // Check if subscription already exists by keys
-      const existingSubscription = await this.subscriptionRepository.findOne({
-        where: {
-          keys: {
-            p256dh: createSubscriptionDto.keys.p256dh,
-            auth: createSubscriptionDto.keys.auth,
-          },
-        },
-      });
+      const existingSubscription = await this.subscriptionRepository.createQueryBuilder('subscription')
+        .where('subscription.keys->>\'p256dh\' = :p256dh AND subscription.keys->>\'auth\' = :auth', { 
+          p256dh: createSubscriptionDto.keys.p256dh, 
+          auth: createSubscriptionDto.keys.auth 
+        })
+        .getOne();
 
       if (existingSubscription) {
         this.logger.log('Subscription already exists with matching keys:', existingSubscription);
