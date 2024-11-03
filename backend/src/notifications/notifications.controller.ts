@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException, HttpStatus, Logger, Post } from '@nestjs/common';
+import { Body, Controller, HttpException, HttpStatus, Logger, Post, Delete } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { NotificationsService } from './notifications.service';
 
@@ -29,6 +29,21 @@ export class NotificationsController {
       return await this.notificationsService.unsubscribe(createSubscriptionDto);
     } catch (error) {
       this.logger.error('Error in unsubscribe endpoint:', error);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Delete('delete-all')
+  async deleteAllSubscriptions() {
+    try {
+      this.logger.log('Received request to delete all subscriptions');
+      await this.notificationsService.deleteAllSubscriptions();
+      return { message: 'All subscriptions deleted successfully' };
+    } catch (error) {
+      this.logger.error('Error in delete-all endpoint:', error);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
