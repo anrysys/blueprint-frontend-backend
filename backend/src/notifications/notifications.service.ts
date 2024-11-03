@@ -34,28 +34,26 @@ export class NotificationsService {
   async subscribe(createSubscriptionDto: CreateSubscriptionDto): Promise<Subscription> {
     try {
       this.logger.log('Received subscription:', createSubscriptionDto);
-      if (!createSubscriptionDto.keys || !createSubscriptionDto.keys.p256dh) {
+      if (!createSubscriptionDto.keys || !createSubscriptionDto.keys.p256dh || !createSubscriptionDto.keys.auth) {
         throw new HttpException('Subscription keys are missing or invalid', HttpStatus.BAD_REQUEST);
       }
       if (createSubscriptionDto.keys.p256dh.length !== 88) {
         throw new HttpException('Invalid p256dh key length', HttpStatus.BAD_REQUEST);
       }
 
-      // Check if subscription already exists
+      // Check if subscription already exists by keys
       const existingSubscription = await this.subscriptionRepository.findOne({
-        where: { endpoint: createSubscriptionDto.endpoint },
+        where: {
+          keys: {
+            p256dh: createSubscriptionDto.keys.p256dh,
+            auth: createSubscriptionDto.keys.auth,
+          },
+        },
       });
 
       if (existingSubscription) {
-        // Check if the keys match
-        if (JSON.stringify(existingSubscription.keys) === JSON.stringify(createSubscriptionDto.keys)) {
-          this.logger.log('Subscription already exists with matching keys:', existingSubscription);
-          return existingSubscription;
-        } else {
-          this.logger.log('Subscription exists but keys do not match. Updating keys.');
-          existingSubscription.keys = createSubscriptionDto.keys;
-          return await this.subscriptionRepository.save(existingSubscription);
-        }
+        this.logger.log('Subscription already exists with matching keys:', existingSubscription);
+        return existingSubscription;
       }
 
       const subscription = this.subscriptionRepository.create({
