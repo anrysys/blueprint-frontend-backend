@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity()
 export class Subscription {
@@ -6,6 +6,7 @@ export class Subscription {
   id: number;
 
   @Column()
+  @Index({ unique: true })
   endpoint: string;
 
   @Column('json')

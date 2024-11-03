@@ -17,7 +17,8 @@ export default function Home() {
           try {
             const existingSubscription = await registration.pushManager.getSubscription();
             if (!existingSubscription) {
-              subscribe();
+              console.log('No existing subscription found. Subscribing...');
+              await subscribe();
             } else {
               console.log('User is already subscribed:', existingSubscription);
             }
