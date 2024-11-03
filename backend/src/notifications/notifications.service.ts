@@ -79,6 +79,19 @@ export class NotificationsService {
     }
   }
 
+  async resetSubscriptionSequence(): Promise<void> {
+    try {
+      await this.subscriptionRepository.query('ALTER SEQUENCE subscription_id_seq RESTART WITH 1');
+      this.logger.log('Subscription ID sequence reset successfully');
+    } catch (error) {
+      this.logger.error('Error resetting subscription ID sequence:', error);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async sendNotification(subscription: Subscription, payload: any): Promise<void> {
     try {
       await webpush.sendNotification(subscription, JSON.stringify(payload));

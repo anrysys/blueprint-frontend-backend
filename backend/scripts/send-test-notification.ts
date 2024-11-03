@@ -12,6 +12,10 @@ async function bootstrap() {
   console.log('VAPID_PRIVATE_KEY:', process.env.VAPID_PRIVATE_KEY);
 
   try {
+    if (!process.env.VAPID_MAILTO || !process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+      throw new Error('VAPID details are not set in environment variables');
+    }
+
     const app = await NestFactory.createApplicationContext(AppModule);
     const notificationsService = app.get(NotificationsService);
 
@@ -38,7 +42,11 @@ async function bootstrap() {
         console.error('Invalid p256dh key length:', subscription.keys.p256dh.length);
         continue;
       }
-      await notificationsService.sendNotification(subscription, payload);
+      try {
+        await notificationsService.sendNotification(subscription, payload);
+      } catch (error) {
+        console.error('Error sending notification to:', subscription.endpoint, error);
+      }
     }
 
     await app.close();

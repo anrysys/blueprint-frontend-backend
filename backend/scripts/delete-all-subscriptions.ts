@@ -14,6 +14,10 @@ async function bootstrap() {
     console.log('Deleting all subscriptions...');
     await notificationsService.deleteAllSubscriptions();
     console.log('All subscriptions deleted successfully');
+
+    console.log('Resetting subscription ID sequence...');
+    await notificationsService.resetSubscriptionSequence();
+    console.log('Subscription ID sequence reset successfully');
   } catch (error) {
     console.error('Error deleting all subscriptions:', error);
   } finally {
