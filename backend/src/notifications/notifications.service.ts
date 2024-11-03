@@ -28,6 +28,9 @@ export class NotificationsService {
 
   async subscribe(createSubscriptionDto: CreateSubscriptionDto): Promise<Subscription> {
     try {
+      if (createSubscriptionDto.keys.p256dh.length !== 88) {
+        throw new HttpException('Invalid p256dh key length', HttpStatus.BAD_REQUEST);
+      }
       const subscription = this.subscriptionRepository.create({
         endpoint: createSubscriptionDto.endpoint,
         keys: createSubscriptionDto.keys,

@@ -8,7 +8,6 @@ import { config } from 'dotenv';
 config({ path: path.resolve(__dirname, '../.env') });
 
 async function bootstrap() {
-  
   console.log('VAPID_PUBLIC_KEY:', process.env.VAPID_PUBLIC_KEY);
   console.log('VAPID_PRIVATE_KEY:', process.env.VAPID_PRIVATE_KEY);
 
@@ -35,6 +34,10 @@ async function bootstrap() {
 
     for (const subscription of subscriptions) {
       console.log('Sending notification to:', subscription);
+      if (subscription.keys.p256dh.length !== 88) {
+        console.error('Invalid p256dh key length:', subscription.keys.p256dh.length);
+        continue;
+      }
       await notificationsService.sendNotification(subscription, payload);
     }
 
