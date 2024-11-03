@@ -4,7 +4,11 @@ export async function subscribe() {
     const registration = await navigator.serviceWorker.ready;
     console.log('Service Worker ready:', registration);
 
-    const applicationServerKey = urlB64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
+    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!vapidPublicKey) {
+      throw new Error('VAPID public key is not defined');
+    }
+    const applicationServerKey = urlB64ToUint8Array(vapidPublicKey);
     console.log('Application Server Key:', applicationServerKey);
 
     const subscription = await registration.pushManager.subscribe({
@@ -14,8 +18,13 @@ export async function subscribe() {
 
     console.log('Subscription obtained:', subscription);
     console.log('Subscription JSON:', JSON.stringify(subscription));
-    console.log('Subscription keys:', subscription.keys);
-    console.log('p256dh key length:', subscription.keys.p256dh.byteLength);
+    const subscriptionJson = subscription.toJSON();
+    console.log('Subscription keys:', subscriptionJson.keys);
+    if (subscriptionJson.keys) {
+      console.log('p256dh key length:', Buffer.byteLength(subscriptionJson.keys.p256dh, 'base64'));
+    } else {
+      console.warn('Subscription keys are undefined');
+    }
 
     // Save subscription to localStorage to prevent duplicate subscriptions
     localStorage.setItem('subscription', JSON.stringify(subscription));
