@@ -1,6 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
 import { NotificationsService } from '../src/notifications/notifications.service';
+import * as path from 'path';
+import { config } from 'dotenv';
+
+// Add .env file support
+config({ path: path.resolve(__dirname, '../.env') });
 
 async function bootstrap() {
   try {
