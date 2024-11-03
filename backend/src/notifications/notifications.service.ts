@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as webpush from 'web-push';
@@ -11,6 +11,8 @@ config();
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
@@ -28,6 +30,10 @@ export class NotificationsService {
 
   async subscribe(createSubscriptionDto: CreateSubscriptionDto): Promise<Subscription> {
     try {
+      this.logger.log('Received subscription:', createSubscriptionDto);
+      if (!createSubscriptionDto.keys || !createSubscriptionDto.keys.p256dh) {
+        throw new HttpException('Subscription keys are missing or invalid', HttpStatus.BAD_REQUEST);
+      }
       if (createSubscriptionDto.keys.p256dh.length !== 88) {
         throw new HttpException('Invalid p256dh key length', HttpStatus.BAD_REQUEST);
       }
@@ -37,6 +43,7 @@ export class NotificationsService {
       });
       return await this.subscriptionRepository.save(subscription);
     } catch (error) {
+      this.logger.error('Error subscribing:', error);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -48,6 +55,7 @@ export class NotificationsService {
     try {
       await this.subscriptionRepository.delete({ endpoint: createSubscriptionDto.endpoint });
     } catch (error) {
+      this.logger.error('Error unsubscribing:', error);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -59,6 +67,7 @@ export class NotificationsService {
     try {
       await webpush.sendNotification(subscription, JSON.stringify(payload));
     } catch (error) {
+      this.logger.error('Error sending notification:', error);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,
@@ -70,6 +79,7 @@ export class NotificationsService {
     try {
       return await this.subscriptionRepository.find();
     } catch (error) {
+      this.logger.error('Error getting all subscriptions:', error);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,

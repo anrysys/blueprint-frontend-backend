@@ -2,7 +2,7 @@
 export async function POST(req: Request) {
   try {
     const subscription = await req.json();
-    const response = await fetch(`${process.env.BACKEND_URL}/notifications/unsubscribe`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/notifications/unsubscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
