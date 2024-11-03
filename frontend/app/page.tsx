@@ -17,8 +17,13 @@ export default function Home() {
           try {
             const existingSubscription = await registration.pushManager.getSubscription();
             if (!existingSubscription) {
-              console.log('No existing subscription found. Subscribing...');
-              await subscribe();
+              const localSubscription = localStorage.getItem('subscription');
+              if (!localSubscription) {
+                console.log('No existing subscription found. Subscribing...');
+                await subscribe();
+              } else {
+                console.log('User is already subscribed (localStorage):', JSON.parse(localSubscription));
+              }
             } else {
               console.log('User is already subscribed:', existingSubscription);
             }
