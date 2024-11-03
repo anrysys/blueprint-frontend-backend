@@ -14,7 +14,12 @@ export default function Home() {
       navigator.serviceWorker.register('/service-worker.js')
         .then(registration => {
           console.log('Service Worker registered with scope:', registration.scope);
-          subscribe();
+          const existingSubscription = localStorage.getItem('subscription');
+          if (!existingSubscription) {
+            subscribe();
+          } else {
+            console.log('User is already subscribed:', JSON.parse(existingSubscription));
+          }
         })
         .catch(error => {
           console.error('Service Worker registration failed:', error);
