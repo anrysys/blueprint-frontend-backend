@@ -17,6 +17,9 @@ export class NotificationsService {
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
   ) {
+    if (!process.env.VAPID_MAILTO || !process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+      throw new Error('VAPID details are not set in environment variables');
+    }
     webpush.setVapidDetails(
       process.env.VAPID_MAILTO,
       process.env.VAPID_PUBLIC_KEY,

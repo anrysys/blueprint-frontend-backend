@@ -4,6 +4,10 @@ import { NotificationsService } from '../src/notifications/notifications.service
 
 async function bootstrap() {
   try {
+    if (!process.env.VAPID_MAILTO || !process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+      throw new Error('VAPID details are not set in environment variables');
+    }
+
     const app = await NestFactory.createApplicationContext(AppModule);
     const notificationsService = app.get(NotificationsService);
 
