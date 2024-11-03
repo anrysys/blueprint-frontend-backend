@@ -5,6 +5,13 @@ export async function subscribe() {
     if (permission !== 'granted') {
       throw new Error('Permission not granted for Notification');
     }
+
+    const existingSubscription = localStorage.getItem('subscription');
+    if (existingSubscription) {
+      console.log('User is already subscribed:', JSON.parse(existingSubscription));
+      return;
+    }
+
     const registration = await navigator.serviceWorker.ready;
     console.log('Service Worker ready:', registration);
     const applicationServerKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -29,6 +36,10 @@ export async function subscribe() {
     const p256dhKey = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscriptionKeys.p256dh))));
     const authKey = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscriptionKeys.auth))));
     console.log('p256dh key length:', p256dhKey.length);
+
+    // Save subscription to localStorage
+    localStorage.setItem('subscription', JSON.stringify(subscription));
+
     await fetch('/api/notifications/subscribe', {
       method: 'POST',
       headers: {
@@ -53,6 +64,7 @@ function urlBase64ToUint8Array(base64String: string) {
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
+
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
