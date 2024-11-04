@@ -48,3 +48,20 @@ export const registerServiceWorker = async () => {
     toast.error('Service Worker not supported in this browser.');
   }
 };
+
+export const enablePushNotifications = async () => {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      await subscribe();
+      localStorage.setItem('notificationPushApiDenied', 'false');
+      toast.success('Push notifications enabled successfully.');
+    } else {
+      console.error('Permission for notifications was denied');
+      toast.error('Permission for notifications was denied.');
+    }
+  } catch (error) {
+    console.error('Error enabling push notifications:', error);
+    toast.error('An error occurred while enabling push notifications. Please try again.');
+  }
+};
