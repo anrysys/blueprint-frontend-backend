@@ -35,22 +35,30 @@ export class NotificationsService {
   }
 
   async subscribe(userId: number, subscription: any): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
+    try {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
 
-    const existingSubscription = await this.subscriptionRepository.findOne({
-      where: { user, endpoint: subscription.endpoint },
-    });
-
-    if (!existingSubscription) {
-      const newSubscription = this.subscriptionRepository.create({
-        user,
-        endpoint: subscription.endpoint,
-        keys: subscription.keys,
+      const existingSubscription = await this.subscriptionRepository.findOne({
+        where: { user, endpoint: subscription.endpoint },
       });
-      await this.subscriptionRepository.save(newSubscription);
+
+      if (!existingSubscription) {
+        const newSubscription = this.subscriptionRepository.create({
+          user,
+          endpoint: subscription.endpoint,
+          keys: subscription.keys,
+        });
+        await this.subscriptionRepository.save(newSubscription);
+      }
+    } catch (error) {
+      this.logger.error('Error during subscription:', error);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, HttpException, HttpStatus, Logger, Post, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { NotificationsService } from './notifications.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -12,9 +12,21 @@ export class NotificationsController {
   @UseGuards(JwtAuthGuard)
   @Post('subscribe')
   async subscribe(@Body() subscription: any, @Req() req: any) {
-    const userId = req.user.id;
-    this.logger.log('Received subscription request:', subscription);
-    return await this.notificationsService.subscribe(userId, subscription);
+    try {
+      const userId = req.user.id;
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new HttpException('No auth token provided', HttpStatus.UNAUTHORIZED);
+      }
+      this.logger.log('Received subscription request:', subscription);
+      return await this.notificationsService.subscribe(userId, subscription);
+    } catch (error) {
+      this.logger.error('Error in subscribe endpoint:', error);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Post('unsubscribe')

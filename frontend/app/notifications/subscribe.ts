@@ -1,5 +1,9 @@
 export const subscribe = async (token: string) => {
   try {
+    if (!token) {
+      throw new Error('No auth token provided');
+    }
+
     const registration = await navigator.serviceWorker.ready;
     console.log('Service Worker ready:', registration);
 
