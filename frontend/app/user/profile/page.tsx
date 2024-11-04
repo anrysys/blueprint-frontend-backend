@@ -153,7 +153,7 @@ export default function Profile() {
     Cookies.remove('access_token');
     Cookies.remove('refresh_token');
     setIsAuthenticated(false);
-    toast.success('You have successfully logged out!');
+    toast.success('Successful logout!');
     router.push('/login');
   };
 
