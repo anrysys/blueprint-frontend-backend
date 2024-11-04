@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuthStore } from '../../../store/authStore';
+//import { registerServiceWorker } from '../../../utils/registerServiceWorker';
 
 interface DecodedToken {
   sub: number;
@@ -35,6 +36,9 @@ export default function Profile() {
     setUsername(localStorage.getItem('username') || '');
     setEmail(localStorage.getItem('email') || '');
     fetchProfile();
+
+    // Регистрация Service Worker и подписка на уведомления
+    //registerServiceWorker();
   }, [isAuthenticated]);
 
   const fetchProfile = async () => {
@@ -66,7 +70,7 @@ export default function Profile() {
 
       const data = await response.json();
       const decodedToken: DecodedToken = jwtDecode(token);
-      if (decodedToken.sub === data.id) { // Проверка, что ID пользователя совпадает
+      if (decodedToken.sub === data.id) { // Проверка, чт�� ID пользователя совпадает
         setUsername(data.username || '');
         setEmail(data.email || '');
 

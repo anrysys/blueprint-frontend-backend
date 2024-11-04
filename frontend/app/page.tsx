@@ -4,45 +4,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import { subscribe } from './notifications/subscribe';
+// import { useEffect } from "react";
+// import { registerServiceWorker } from '../utils/registerServiceWorker';
 
 export default function Home() {
-  const effectRan = useRef(false);
-
-  useEffect(() => {
-    if (effectRan.current) return;
-    effectRan.current = true;
-
-    if ('serviceWorker' in navigator) {
-      console.log('Registering Service Worker...');
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(async registration => {
-          console.log('Service Worker registered with scope:', registration.scope);
-          try {
-            const existingSubscription = await registration.pushManager.getSubscription();
-            if (!existingSubscription) {
-              const localSubscription = localStorage.getItem('subscription');
-              if (!localSubscription) {
-                console.log('No existing subscription found. Subscribing...');
-                await subscribe();
-              } else {
-                console.log('User is already subscribed (localStorage):', JSON.parse(localSubscription));
-              }
-            } else {
-              console.log('User is already subscribed:', existingSubscription);
-            }
-          } catch (error) {
-            console.error('Error during subscription check:', error);
-          }
-        })
-        .catch(error => {
-          console.error('Service Worker registration failed:', error);
-        });
-    } else {
-      console.error('Service Worker not supported in this browser.');
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Регистрация Service Worker и подписка на уведомления
+  //   registerServiceWorker();
+  // }, []);
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
