@@ -3,7 +3,7 @@ import { subscribe } from '../app/notifications/subscribe';
 
 let notificationDenied = false;
 
-export const registerServiceWorker = async () => {
+export const registerServiceWorker = async (token: string) => {
   if ('serviceWorker' in navigator) {
     console.log('Registering Service Worker...');
     try {
@@ -24,7 +24,7 @@ export const registerServiceWorker = async () => {
           console.log('No existing subscription found. Subscribing...');
           const permission = await Notification.requestPermission();
           if (permission === 'granted') {
-            await subscribe();
+            await subscribe(token);
           } else {
             console.error('Permission for notifications was denied');
             if (!notificationDenied) {
@@ -49,12 +49,25 @@ export const registerServiceWorker = async () => {
   }
 };
 
-export const enablePushNotifications = async () => {
+export const enablePushNotifications = async (token: string) => {
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      await subscribe();
+      await subscribe(token);
       localStorage.setItem('notificationPushApiDenied', 'false');
+
+      const response = await fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to subscribe to notifications');
+      }
+
       toast.success('Push notifications enabled successfully.');
     } else {
       console.error('Permission for notifications was denied');

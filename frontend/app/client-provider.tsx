@@ -7,14 +7,14 @@ import { useAuthStore } from '../store/authStore';
 import { registerServiceWorker } from '../utils/registerServiceWorker';
 
 export default function ClientProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, checkAuth } = useAuthStore();
+  const { isAuthenticated, checkAuth, token } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
-    if (isAuthenticated) {
-      registerServiceWorker();
+    if (isAuthenticated && token) {
+      registerServiceWorker(token);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   return <>{children}</>;
 }

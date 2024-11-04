@@ -26,7 +26,7 @@ export default function Profile() {
   );
   const router = useRouter();
   const isFetching = useRef(false);
-  const { isAuthenticated, checkAuth, setIsAuthenticated } = useAuthStore();
+  const { isAuthenticated, checkAuth, setIsAuthenticated, token } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
@@ -40,8 +40,6 @@ export default function Profile() {
     setEmail(localStorage.getItem('email') || '');
     fetchProfile();
 
-    // Регистрация Service Worker и подписка на уведомления
-    //registerServiceWorker();
   }, [isAuthenticated]);
 
   const fetchProfile = async () => {
@@ -166,7 +164,11 @@ export default function Profile() {
 
   const handlePushNotificationsChange = async () => {
     if (!pushNotificationsEnabled) {
-      await enablePushNotifications();
+      if (!token) {
+        toast.error('No access token found');
+        return;
+      }
+      await enablePushNotifications(token);
     }
     setPushNotificationsEnabled(!pushNotificationsEnabled);
   };
