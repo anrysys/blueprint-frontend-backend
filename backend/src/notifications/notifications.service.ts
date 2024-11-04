@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import * as webpush from 'web-push';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { Subscription } from './subscription.entity';
+import { User } from '../user/user.entity';
 
 // Add .env file support
 import { config } from 'dotenv';
@@ -16,6 +17,8 @@ export class NotificationsService {
   constructor(
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {
     if (!process.env.VAPID_MAILTO || !process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
       throw new Error('VAPID details are not set in environment variables');
@@ -31,44 +34,23 @@ export class NotificationsService {
     webpush.setVapidDetails(subject, publicKey, privateKey);
   }
 
-  async subscribe(createSubscriptionDto: CreateSubscriptionDto): Promise<Subscription> {
-    try {
-      this.logger.log('Received subscription:', createSubscriptionDto);
+  async subscribe(userId: number, subscription: any): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
 
-      // Check if subscription already exists by endpoint
-      const existingSubscription = await this.subscriptionRepository.findOne({
-        where: { endpoint: createSubscriptionDto.endpoint },
+    const existingSubscription = await this.subscriptionRepository.findOne({
+      where: { user, endpoint: subscription.endpoint },
+    });
+
+    if (!existingSubscription) {
+      const newSubscription = this.subscriptionRepository.create({
+        user,
+        endpoint: subscription.endpoint,
+        keys: subscription.keys,
       });
-
-      if (existingSubscription) {
-        this.logger.log('Subscription already exists with matching endpoint:', existingSubscription);
-        return existingSubscription;
-      }
-
-      // Check if subscription already exists by keys
-      const existingSubscriptionByKeys = await this.subscriptionRepository.createQueryBuilder('subscription')
-        .where('subscription.keys->>\'p256dh\' = :p256dh AND subscription.keys->>\'auth\' = :auth', { 
-          p256dh: createSubscriptionDto.keys.p256dh, 
-          auth: createSubscriptionDto.keys.auth 
-        })
-        .getOne();
-
-      if (existingSubscriptionByKeys) {
-        this.logger.log('Subscription already exists with matching keys:', existingSubscriptionByKeys);
-        return existingSubscriptionByKeys;
-      }
-
-      const subscription = this.subscriptionRepository.create({
-        endpoint: createSubscriptionDto.endpoint,
-        keys: createSubscriptionDto.keys,
-      });
-      return await this.subscriptionRepository.save(subscription);
-    } catch (error) {
-      this.logger.error('Error subscribing:', error);
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: error.message,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
+      await this.subscriptionRepository.save(newSubscription);
     }
   }
 

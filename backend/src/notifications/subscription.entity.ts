@@ -1,7 +1,7 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from '../user/user.entity';
 
 @Entity()
-@Index(['endpoint', 'keys'], { unique: true })
 export class Subscription {
   @PrimaryGeneratedColumn()
   id: number;
@@ -9,9 +9,12 @@ export class Subscription {
   @Column()
   endpoint: string;
 
-  @Column('jsonb', { nullable: false, default: '{}' })
+  @Column('json')
   keys: {
     p256dh: string;
     auth: string;
   };
+
+  @ManyToOne(() => User, user => user.subscriptions, { onDelete: 'CASCADE' })
+  user: User;
 }

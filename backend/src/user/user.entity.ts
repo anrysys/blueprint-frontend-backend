@@ -2,6 +2,7 @@
 
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from '../posts/post.entity';
+import { Subscription } from '../notifications/subscription.entity';
 
 @Entity()
 export class User {
@@ -20,4 +21,7 @@ export class User {
 
   @OneToMany(() => Post, post => post.user)
   posts: Post[];
+
+  @OneToMany(() => Subscription, subscription => subscription.user)
+  subscriptions: Subscription[];
 }

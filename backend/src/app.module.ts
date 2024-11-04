@@ -9,12 +9,15 @@ import { NotificationsService } from './notifications/notifications.service';
 import { Subscription } from './notifications/subscription.entity';
 import { PostsModule } from './posts/posts.module';
 import { UserModule } from './user/user.module';
-import { UsersModule } from './users/users.module';
+import { User } from './user/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(typeOrmConfig),
-    UsersModule,
+    TypeOrmModule.forRoot({
+      ...typeOrmConfig,
+      entities: [User, Subscription], // Добавляем все сущности
+    }),
+    UserModule, // Исправляем имя модуля
     PostsModule,
     AuthModule,
     UserModule,

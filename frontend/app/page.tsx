@@ -4,11 +4,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { subscribe } from './notifications/subscribe';
 
 export default function Home() {
+  const effectRan = useRef(false);
+
   useEffect(() => {
+    if (effectRan.current) return;
+    effectRan.current = true;
+
     if ('serviceWorker' in navigator) {
       console.log('Registering Service Worker...');
       navigator.serviceWorker.register('/service-worker.js')

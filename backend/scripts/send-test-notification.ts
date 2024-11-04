@@ -38,10 +38,6 @@ async function bootstrap() {
 
     for (const subscription of subscriptions) {
       console.log('Sending notification to:', subscription);
-      if (subscription.keys.p256dh.length !== 88) {
-        console.error('Invalid p256dh key length:', subscription.keys.p256dh.length);
-        continue;
-      }
       try {
         await notificationsService.sendNotification(subscription, payload);
       } catch (error) {

@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, HttpException, HttpStatus, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Delete, HttpException, HttpStatus, Logger, Post, Req, UseGuards } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { NotificationsService } from './notifications.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -8,18 +9,12 @@ export class NotificationsController {
 
   constructor(private readonly notificationsService: NotificationsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('subscribe')
-  async subscribe(@Body() createSubscriptionDto: CreateSubscriptionDto) {
-    try {
-      this.logger.log('Received subscription request:', createSubscriptionDto);
-      return await this.notificationsService.subscribe(createSubscriptionDto);
-    } catch (error) {
-      this.logger.error('Error in subscribe endpoint:', error);
-      throw new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: error.message,
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  async subscribe(@Body() subscription: any, @Req() req: any) {
+    const userId = req.user.id;
+    this.logger.log('Received subscription request:', subscription);
+    return await this.notificationsService.subscribe(userId, subscription);
   }
 
   @Post('unsubscribe')
