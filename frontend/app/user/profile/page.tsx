@@ -22,7 +22,7 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const isFetching = useRef(false);
-  const { isAuthenticated, checkAuth } = useAuthStore();
+  const { isAuthenticated, checkAuth, setIsAuthenticated } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
@@ -149,15 +149,12 @@ export default function Profile() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      Cookies.remove('access_token');
-      Cookies.remove('refresh_token');
-      toast.success('You have successfully logged out!');
-      router.push('/login');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
-    }
+  const handleLogout = () => {
+    Cookies.remove('access_token');
+    Cookies.remove('refresh_token');
+    setIsAuthenticated(false);
+    toast.success('You have successfully logged out!');
+    router.push('/login');
   };
 
   if (isLoading) {
