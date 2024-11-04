@@ -3,8 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
 import { RedisService } from '../redis/redis.service'; // Импорт RedisService
-import { User } from '../users/user.entity';
-import { UsersService } from '../users/users.service';
+import { User } from '../user/user.entity';
+import { UserService } from '../user/user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 
@@ -14,7 +14,7 @@ dotenv.config(); // Загрузка переменных из .env
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly usersService: UsersService,
+    private readonly usersService: UserService,
     private readonly redisService: RedisService, 
   ) {}
 

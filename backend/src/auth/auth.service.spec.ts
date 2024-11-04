@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
+import { Test, TestingModule } from '@nestjs/testing';
 import { RedisService } from '../redis/redis.service';
+import { UserService } from '../user/user.service';
+import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -19,7 +19,7 @@ describe('AuthService', () => {
           },
         },
         {
-          provide: UsersService,
+          provide: UserService,
           useValue: {
             findOne: jest.fn(),
             create: jest.fn(),

@@ -4,13 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { typeOrmConfig } from './config/typeorm.config';
 import { LoggerMiddleware } from './logger.middleware';
-import { NotificationsController } from './notifications/notifications.controller';
-import { NotificationsService } from './notifications/notifications.service';
-import { Subscription } from './notifications/subscription.entity';
+import { NotificationsModule } from './notifications/notifications.module'; // Импортируем NotificationsModule
 import { PostsModule } from './posts/posts.module';
 import { UserModule } from './user/user.module';
-import { User } from './user/user.entity';
-import { Post } from './posts/post.entity';
 
 @Module({
   imports: [
@@ -21,10 +17,8 @@ import { Post } from './posts/post.entity';
     UserModule,
     PostsModule,
     AuthModule,
-    TypeOrmModule.forFeature([Subscription]),
+    NotificationsModule, // Импортируем NotificationsModule
   ],
-  providers: [NotificationsService],
-  controllers: [NotificationsController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -24,4 +24,9 @@ export class User {
 
   @OneToMany(() => Subscription, subscription => subscription.user)
   subscriptions: Subscription[];
+
+  toJSON() {
+    const { password, ...userWithoutPassword } = this;
+    return userWithoutPassword;
+  }
 }

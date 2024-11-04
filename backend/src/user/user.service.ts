@@ -1,9 +1,11 @@
 // src/user/user.service.ts
 
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserResponse } from './dto/user-response.dto';
 import { User } from './user.entity';
 
 @Injectable()
@@ -14,6 +16,43 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    try {
+      const user = this.userRepository.create(createUserDto);
+      const savedUser = await this.userRepository.save(user);
+      return savedUser;
+    } catch (error) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findOneByEmail(email: string): Promise<User | undefined> {
+    try {
+      const user = await this.userRepository.findOne({ where: { email } });
+      return user;
+    } catch (error) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findOneById(id: number): Promise<User | undefined> {
+    try {
+      const user = await this.userRepository.findOne({ where: { id } });
+      return user;
+    } catch (error) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   async findById(id: number): Promise<User> {
     try {
@@ -45,4 +84,9 @@ export class UserService {
       throw new Error('Failed to update user');
     }
   }
+
+  toUserResponse(user: User): UserResponse {
+    const { id, username, email } = user;
+    return { id, username, email };
+  }  
 }

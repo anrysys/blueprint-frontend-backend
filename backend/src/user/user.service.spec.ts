@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from './user.entity';
 import { Repository } from 'typeorm';
+import { User } from './user.entity';
+import { UserService } from './user.service';
 
-describe('UsersService', () => {
-  let service: UsersService;
+describe('UserService', () => {
+  let service: UserService;
   let repository: Repository<User>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UsersService,
+        UserService,
         {
           provide: getRepositoryToken(User),
           useClass: Repository,
@@ -19,7 +19,7 @@ describe('UsersService', () => {
       ],
     }).compile();
 
-    service = module.get<UsersService>(UsersService);
+    service = module.get<UserService>(UserService);
     repository = module.get<Repository<User>>(getRepositoryToken(User));
   });
 
@@ -27,5 +27,5 @@ describe('UsersService', () => {
     expect(service).toBeDefined();
   });
 
-  // Добавьте тесты для методов UsersService
+  // Добавьте тесты для методов UserService
 });

@@ -3,7 +3,7 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import * as dotenv from 'dotenv';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 
 dotenv.config(); // Загрузка конфигурации из .env
 
@@ -12,7 +12,7 @@ dotenv.config(); // Загрузка конфигурации из .env
 export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(JwtStrategy.name);
   
-  constructor(private readonly usersService: UsersService) {
+  constructor(private readonly usersService: UserService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
