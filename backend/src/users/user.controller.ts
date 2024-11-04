@@ -1,4 +1,5 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { UserPayload } from '../auth/user-payload.interface'; // Импортируем интерфейс UserPayload
 import { Request, Response } from 'express';
 import { AuthGuard } from '../auth/auth.guard';
 import { User } from './user.entity'; // Импортируем сущность User
@@ -14,18 +15,32 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  async getProfile(@Req() req: AuthenticatedRequest, @Res() res: Response) {
+  async getProfile(@Req() req: Request & { user: UserPayload }) {
     try {
       const userId = req.user.id;
-      const user = await this.usersService.findOneById(userId);
-      if (user) {
-        const userWithoutPassword = user.toJSON();
-        return res.json(userWithoutPassword);
-      } else {
-        return res.status(404).json({ message: 'User not found' });
-      }
+      this.logger.log(`GET /user/profile - User ID: ${userId}`); // Логирование ID пользователя (GET)
+      this.logger.log(`GET /user/profile - Headers: ${JSON.stringify(req.headers)}`); // Логирование заголовков запроса
+      return this.userService.findById(userId);
     } catch (error) {
-      return res.status(500).json({ message: 'Internal Server Error' });
+      this.logger.error(`Error in GET /user/profile: ${error.message}`); // Логирование ошибки
+      throw new Error('Failed to get profile');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('profile')
+  async updateProfile(@Req() req: Request & { user: UserPayload }, @Body() updateUserDto: UpdateUserDto) {
+    try {
+      const userId = req.user.id;
+      this.logger.log(`PUT /user/profile - User ID: ${userId}`); // Логирование ID пользователя (PUT)
+      this.logger.log(`PUT /user/profile - Headers: ${JSON.stringify(req.headers)}`); // Логирование заголовков запроса
+      this.logger.log(`PUT /user/profile - Body: ${JSON.stringify(updateUserDto)}`); // Логирование тела запроса
+      const updatedUser = await this.userService.update(userId, updateUserDto);
+      this.logger.log(`User updated: ${JSON.stringify(updatedUser)}`); // Логирование обновленного пользователя
+      return updatedUser;
+    } catch (error) {
+      this.logger.error(`Error in PUT /user/profile: ${error.message}`); // Логирование ошибки
+      throw new Error('Failed to update profile');
     }
   }
 }
