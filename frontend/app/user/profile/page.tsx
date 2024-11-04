@@ -141,15 +141,14 @@ export default function Profile() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
       Cookies.remove('access_token');
       Cookies.remove('refresh_token');
       toast.success('You have successfully logged out!');
+      router.push('/login');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
-    } finally {
-      router.push('/login');
     }
   };
 
