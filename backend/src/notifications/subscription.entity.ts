@@ -1,5 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-import { User } from '../user/user.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from '../users/user.entity';
 
 @Entity()
 export class Subscription {
@@ -9,11 +9,8 @@ export class Subscription {
   @Column()
   endpoint: string;
 
-  @Column('json')
-  keys: {
-    p256dh: string;
-    auth: string;
-  };
+  @Column('json', { nullable: true, default: {} })
+  keys: Record<string, string>;
 
   @ManyToOne(() => User, user => user.subscriptions, { onDelete: 'CASCADE' })
   user: User;

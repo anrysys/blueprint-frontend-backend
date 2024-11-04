@@ -1,6 +1,6 @@
-// src/user/user.service.ts
+// src/users/users.service.ts
 
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../auth/dto/create-user.dto';
@@ -9,9 +9,7 @@ import { UserResponse } from './dto/user-response.dto';
 import { User } from './user.entity';
 
 @Injectable()
-export class UserService {
-  private readonly logger = new Logger(UserService.name);
-
+export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -53,7 +51,6 @@ export class UserService {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
   async findById(id: number): Promise<User> {
     try {
       const user = await this.userRepository.findOne({ where: { id } });
@@ -68,25 +65,20 @@ export class UserService {
 
   async update(userId: number, updateUserDto: UpdateUserDto): Promise<User> {
     try {
-      this.logger.log(`Updating user with ID: ${userId}`); // Логирование ID пользователя
-      this.logger.log(`Update data: ${JSON.stringify(updateUserDto)}`); // Логирование данных обновления
-
+      
       if (!updateUserDto.email) {
         throw new BadRequestException('Email cannot be empty');
       }
 
       await this.userRepository.update(userId, updateUserDto);
       const updatedUser = await this.userRepository.findOne({ where: { id: userId } });
-      this.logger.log(`Updated user: ${JSON.stringify(updatedUser)}`); // Логирование обновленного пользователя
       return updatedUser;
     } catch (error) {
-      this.logger.error(`Error updating user: ${error.message}`); // Логирование ошибки
       throw new Error('Failed to update user');
     }
   }
-
   toUserResponse(user: User): UserResponse {
     const { id, username, email } = user;
     return { id, username, email };
-  }  
+  }
 }

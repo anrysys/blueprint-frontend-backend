@@ -1,8 +1,8 @@
-// src/user/user.entity.ts
+// src/users/user.entity.ts
 
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Post } from '../posts/post.entity';
 import { Subscription } from '../notifications/subscription.entity';
+import { Post } from '../posts/post.entity';
 
 @Entity()
 export class User {

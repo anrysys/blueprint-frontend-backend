@@ -2,9 +2,9 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as webpush from 'web-push';
+import { User } from '../users/user.entity';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { Subscription } from './subscription.entity';
-import { User } from '../user/user.entity';
 
 // Add .env file support
 import { config } from 'dotenv';

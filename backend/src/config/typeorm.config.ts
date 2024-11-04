@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
 import { Subscription } from '../notifications/subscription.entity';
 import { Post } from '../posts/post.entity';
-import { User } from '../user/user.entity';
+import { User } from '../users/user.entity';
 
 dotenv.config();
 
