@@ -6,6 +6,7 @@ interface AuthState {
   isAuthenticated: boolean;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   logout: () => void;
+  checkAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -15,5 +16,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isAuthenticated: false });
     Cookies.remove('access_token');
     Cookies.remove('refresh_token');
+  },
+  checkAuth: () => {
+    const token = Cookies.get('access_token');
+    set({ isAuthenticated: !!token });
   },
 }));

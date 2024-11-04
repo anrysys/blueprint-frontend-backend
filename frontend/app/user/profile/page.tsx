@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuthStore } from '../../../store/authStore';
 
 interface DecodedToken {
   sub: number;
@@ -21,6 +22,20 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const isFetching = useRef(false);
+  const { isAuthenticated, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    // Восстанавливаем данные пользователя из localStorage при загрузке компонента
+    setUsername(localStorage.getItem('username') || '');
+    setEmail(localStorage.getItem('email') || '');
+    fetchProfile();
+  }, [isAuthenticated]);
 
   const fetchProfile = async () => {
     if (isFetching.current) return;
@@ -101,13 +116,6 @@ export default function Profile() {
       router.push('/login');
     }
   };
-
-  useEffect(() => {
-    // Восстанавливаем данные пользователя из localStorage при загрузке компонента
-    setUsername(localStorage.getItem('username') || '');
-    setEmail(localStorage.getItem('email') || '');
-    fetchProfile();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
