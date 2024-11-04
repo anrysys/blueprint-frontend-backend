@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuthStore } from '../../../store/authStore';
-import { enablePushNotifications } from '../../../utils/registerServiceWorker';
 
 interface DecodedToken {
   sub: number;
@@ -21,12 +20,9 @@ export default function Profile() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(
-    localStorage.getItem('notificationPushApiDenied') !== 'true'
-  );
   const router = useRouter();
   const isFetching = useRef(false);
-  const { isAuthenticated, checkAuth, setIsAuthenticated, token } = useAuthStore();
+  const { isAuthenticated, checkAuth, setIsAuthenticated } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
@@ -162,17 +158,6 @@ export default function Profile() {
     router.push('/login');
   };
 
-  const handlePushNotificationsChange = async () => {
-    if (!pushNotificationsEnabled) {
-      if (!token) {
-        toast.error('No access token found');
-        return;
-      }
-      await enablePushNotifications(token);
-    }
-    setPushNotificationsEnabled(!pushNotificationsEnabled);
-  };
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -197,15 +182,6 @@ export default function Profile() {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="pushNotifications">Enable Push Notifications:</label>
-          <input
-            type="checkbox"
-            id="pushNotifications"
-            checked={pushNotificationsEnabled}
-            onChange={handlePushNotificationsChange}
           />
         </div>
         <button type="submit">Update Profile</button>
