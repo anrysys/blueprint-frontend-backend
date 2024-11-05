@@ -9,6 +9,8 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuthStore } from '../../../store/authStore';
+import { registerServiceWorker } from '../../../utils/registerServiceWorker';
+import { unsubscribe } from '../../../app/notifications/unsubscribe';
 
 interface DecodedToken {
   sub: number;
@@ -20,6 +22,7 @@ export default function Profile() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const router = useRouter();
   const isFetching = useRef(false);
   const { isAuthenticated, checkAuth, setIsAuthenticated } = useAuthStore();
@@ -34,6 +37,7 @@ export default function Profile() {
     // Восстанавливаем данные пользователя из localStorage при загрузке компонента
     setUsername(localStorage.getItem('username') || '');
     setEmail(localStorage.getItem('email') || '');
+    setIsSubscribed(localStorage.getItem('subscription') !== null);
     fetchProfile();
 
   }, [isAuthenticated]);
@@ -158,6 +162,32 @@ export default function Profile() {
     router.push('/login');
   };
 
+  const handleSubscriptionChange = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+      localStorage.removeItem('subscription');
+      setIsSubscribed(false);
+    } else {
+      try {
+        const token = Cookies.get('access_token');
+        if (!token) {
+          throw new Error('No access token found');
+        }
+        await registerServiceWorker(token);
+        setIsSubscribed(true);
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Permission for notifications was denied') {
+          localStorage.setItem('subscribeDisabled', 'true');
+        }
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error('An unknown error occurred');
+        }
+      }
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -186,6 +216,14 @@ export default function Profile() {
         </div>
         <button type="submit">Update Profile</button>
       </form>
+      <label>
+        <input
+          type="checkbox"
+          checked={isSubscribed}
+          onChange={handleSubscriptionChange}
+        />
+        Subscribe to Push Notifications
+      </label>
       <button onClick={handleLogout}>Logout</button>
     </div>
   );

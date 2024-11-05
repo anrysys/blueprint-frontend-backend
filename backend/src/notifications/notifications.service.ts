@@ -41,18 +41,15 @@ export class NotificationsService {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      const existingSubscription = await this.subscriptionRepository.findOne({
-        where: { user, endpoint: subscription.endpoint },
-      });
+      // Удаление всех существующих подписок пользователя перед сохранением новой подписки
+      await this.unsubscribeAllForUser(userId);
 
-      if (!existingSubscription) {
-        const newSubscription = this.subscriptionRepository.create({
-          user,
-          endpoint: subscription.endpoint,
-          keys: subscription.keys,
-        });
-        await this.subscriptionRepository.save(newSubscription);
-      }
+      const newSubscription = this.subscriptionRepository.create({
+        user,
+        endpoint: subscription.endpoint,
+        keys: subscription.keys,
+      });
+      await this.subscriptionRepository.save(newSubscription);
     } catch (error) {
       this.logger.error('Error during subscription:', error);
       throw new HttpException({
@@ -73,6 +70,18 @@ export class NotificationsService {
       }
     } catch (error) {
       this.logger.error('Error unsubscribing:', error);
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: error.message,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async unsubscribeAllForUser(userId: number): Promise<void> {
+    try {
+      await this.subscriptionRepository.delete({ user: { id: userId } });
+    } catch (error) {
+      this.logger.error('Error unsubscribing all for user:', error);
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: error.message,

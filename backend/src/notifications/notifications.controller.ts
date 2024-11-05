@@ -30,10 +30,11 @@ export class NotificationsController {
   }
 
   @Post('unsubscribe')
-  async unsubscribe(@Body() createSubscriptionDto: CreateSubscriptionDto) {
+  async unsubscribe(@Body() createSubscriptionDto: CreateSubscriptionDto, @Req() req: any) {
     try {
-      this.logger.log('Received unsubscribe request:', createSubscriptionDto);
-      return await this.notificationsService.unsubscribe(createSubscriptionDto);
+      const userId = req.user.id;
+      this.logger.log('Received unsubscribe request for user:', userId);
+      return await this.notificationsService.unsubscribeAllForUser(userId);
     } catch (error) {
       this.logger.error('Error in unsubscribe endpoint:', error);
       throw new HttpException({
