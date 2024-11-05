@@ -59,8 +59,8 @@ Before you begin, ensure you have the following installed on your machine:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/setellite-full-stack-docker-swarm.git
-   cd setellite-full-stack-docker-swarm
+   git clone https://github.com/anrysys/blueprint-frontend-backend.git
+   cd blueprint-frontend-backend
    ```
 
 2. **Install dependencies for both frontend and backend:**
@@ -115,7 +115,7 @@ The application requires several environment variables to be set. Below is a lis
 The project is structured as follows:
 
 ```bash
-setellite-full-stack-docker-swarm/
+blueprint-frontend-backend/
 ├── backend/
 │   ├── src/
 │   │   ├── auth/
