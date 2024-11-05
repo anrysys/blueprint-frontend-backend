@@ -8,9 +8,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { unsubscribe } from '../../../app/notifications/unsubscribe';
 import { useAuthStore } from '../../../store/authStore';
 import { registerServiceWorker } from '../../../utils/registerServiceWorker';
-import { unsubscribe } from '../../../app/notifications/unsubscribe';
 
 interface DecodedToken {
   sub: number;
@@ -169,7 +169,7 @@ export default function Profile() {
         localStorage.removeItem('subscription');
         setIsSubscribed(false);
         toast.success('Unsubscribed from Push Notifications successfully');
-      } catch (error) {
+      } catch {
         toast.error('Failed to unsubscribe from Push Notifications');
       }
     } else {
