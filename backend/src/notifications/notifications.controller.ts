@@ -29,6 +29,7 @@ export class NotificationsController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('unsubscribe')
   async unsubscribe(@Body() createSubscriptionDto: CreateSubscriptionDto, @Req() req: any) {
     try {
