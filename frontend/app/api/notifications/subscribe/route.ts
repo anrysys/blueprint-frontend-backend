@@ -6,18 +6,27 @@ export async function POST(req: Request) {
     if (!backendUrl) {
       throw new Error('NEXT_PUBLIC_BACKEND_URL is not defined');
     }
+
+    const token = req.headers.get('Authorization');
+    if (!token) {
+      throw new Error('No auth token provided');
+    }
+
     const response = await fetch(`${backendUrl}/notifications/subscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: token,
       },
       body: JSON.stringify(subscription),
     });
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Failed to subscribe:', errorText);
       throw new Error('Failed to subscribe');
     }
+
     return new Response('Subscribed successfully', { status: 200 });
   } catch (error) {
     console.error('Error in subscribe route:', error);
