@@ -164,9 +164,14 @@ export default function Profile() {
 
   const handleSubscriptionChange = async () => {
     if (isSubscribed) {
-      await unsubscribe();
-      localStorage.removeItem('subscription');
-      setIsSubscribed(false);
+      try {
+        await unsubscribe();
+        localStorage.removeItem('subscription');
+        setIsSubscribed(false);
+        toast.success('Unsubscribed from Push Notifications successfully');
+      } catch (error) {
+        toast.error('Failed to unsubscribe from Push Notifications');
+      }
     } else {
       try {
         const token = Cookies.get('access_token');
@@ -175,6 +180,7 @@ export default function Profile() {
         }
         await registerServiceWorker(token);
         setIsSubscribed(true);
+        toast.success('Subscribed to Push Notifications successfully');
       } catch (error) {
         if (error instanceof Error && error.message === 'Permission for notifications was denied') {
           localStorage.setItem('subscribeDisabled', 'true');
